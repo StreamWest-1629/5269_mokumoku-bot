@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"strconv"
 	"time"
 
 	"app/apis"
@@ -11,7 +9,6 @@ import (
 
 func main() {
 	defer apis.Finalize()
-	fmt.Println("Hay! George!" + strconv.Itoa(len(apis.Finalizer)))
 	for {
 		time.Sleep(time.Minute)
 	}
