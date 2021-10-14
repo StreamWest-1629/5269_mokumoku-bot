@@ -1,0 +1,13 @@
+version: '3.3'
+services:
+  app:
+    container_name: go-app
+    build: .
+    ports:
+      - 3000:3030
+    volumes:
+      - .:/app
+      - go_path:/go
+volumes:
+  go_path:
+
