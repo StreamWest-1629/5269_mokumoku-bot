@@ -1,7 +1,6 @@
 package discord
 
 import (
-	"app/bot"
 	"errors"
 	"fmt"
 	"sync"
@@ -12,7 +11,6 @@ import (
 type (
 	Guild struct {
 		guild      *discordgo.Guild
-		state      bot.BotState
 		rooms      []MokuMoku
 		categoryID string
 		randomChat *TextChat
@@ -53,7 +51,6 @@ func RegisterGuild(guildId string) (guild *Guild, err error) {
 
 		guild = &Guild{
 			guild: g,
-			state: bot.BotStateStopped,
 			rooms: []MokuMoku{},
 		}
 
