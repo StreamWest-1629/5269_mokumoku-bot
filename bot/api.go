@@ -3,6 +3,7 @@ package bot
 type (
 	MokuMokuRoomId int
 	MsgFlag        int
+	BotState       int
 
 	GroupRepository interface {
 		GetMokuMoku() (room MokuMoku, err error)
@@ -44,4 +45,14 @@ const (
 	MsgFlagAdmin
 	MsgFlagNone    MsgFlag = 0
 	MsgFlagSendFor MsgFlag = MsgFlagEveryone | MsgFlagHere | MsgFlagAdmin
+)
+
+const (
+	BotStateStopped BotState = iota
+	BotStateMokuMoku
+	BotStateBreaking
+)
+
+const (
+	BotStateInitializing BotState = -(iota + 1)
 )
