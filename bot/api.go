@@ -6,9 +6,9 @@ type (
 	BotState       int
 
 	GroupRepository interface {
-		GetMokuMoku() (room MokuMoku, err error)
-		MakeMokuMoku(name string) (room MokuMoku, err error)
-		ClearMokuMoku()
+		GetMokuMoku() (room VoiceChat, err error)
+		MakeBranch(name string) (room Branch, err error)
+		ClearBranch()
 		Println(flag MsgFlag, msg string)
 	}
 
@@ -25,7 +25,7 @@ type (
 		UserMute(mute bool)
 	}
 
-	MokuMoku interface {
+	Branch interface {
 		GetMokuMokuId() MokuMokuRoomId
 		GetName() string
 		TextChat
