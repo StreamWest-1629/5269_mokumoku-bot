@@ -6,6 +6,7 @@ type (
 	BotState       int
 
 	GroupRepository interface {
+		InitializeChannels() error
 		GetMokuMoku() (room VoiceChat, err error)
 		MakeBranch(name string) (room Branch, err error)
 		ClearBranch()
@@ -18,6 +19,7 @@ type (
 
 	VoiceChat interface {
 		MoveToHere(member Member) error
+		Joining() []Member
 	}
 
 	Member interface {
