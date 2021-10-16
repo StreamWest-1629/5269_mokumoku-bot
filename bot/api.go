@@ -5,33 +5,31 @@ type (
 	MsgFlag        int
 	BotState       int
 
-	GroupRepository interface {
+	GroupConn interface {
 		InitializeChannels() error
-		GetMokuMoku() (room VoiceChat, err error)
+		GetMokuMoku() (room VoiceChatConn, err error)
 		MakeBranch(name string) (room Branch, err error)
 		ClearBranch()
 		Println(flag MsgFlag, msg string)
 	}
 
-	TextChat interface {
+	TextChatConn interface {
 		SendMessage(msg string)
 	}
 
-	VoiceChat interface {
-		MoveToHere(member Member) error
-		Joining() []Member
+	VoiceChatConn interface {
+		MoveToHere(member MemberConn) error
 	}
 
-	Member interface {
+	MemberConn interface {
+		GetID() string
 		GetUsername() string
 		UserMute(mute bool)
 	}
 
-	Branch interface {
-		GetMokuMokuId() MokuMokuRoomId
-		GetName() string
-		TextChat
-		VoiceChat
+	VoiceStateUpdate struct {
+		MemberConn
+		MokuMokuRoomId
 	}
 )
 
