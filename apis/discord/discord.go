@@ -13,6 +13,7 @@ const envKey = "DISCORD_TOKEN"
 
 var (
 	session *discordgo.Session
+	state   *discordgo.State
 )
 
 func init() {
@@ -30,6 +31,11 @@ func init() {
 	session.AddHandler(onVoiceStateUpdate)
 	session.AddHandler(onMessageCreate)
 
+	// make state
+	state = discordgo.NewState()
+	state.TrackEmojis, state.TrackPresences = false, false
+	session.StateEnabled, session.State = true, state
+
 	// open connection
 	if err := session.Open(); err != nil {
 		panic("cannot open discord bot connection: " + err.Error())
@@ -41,20 +47,19 @@ func init() {
 			session.Close()
 		})
 	}
+
 }
 
 func onVoiceStateUpdate(_ *discordgo.Session, updated *discordgo.VoiceStateUpdate) {
-	fmt.Println("voice state changed")
 	checkGuildRegistered(updated.GuildID)
 }
 
 func onMessageCreate(_ *discordgo.Session, updated *discordgo.MessageCreate) {
-	fmt.Println("message arrived")
 	guild := checkGuildRegistered(updated.GuildID)
 
 	if !updated.Author.Bot && !updated.Author.System {
-		if strings.Index(updated.Content, "/mokumoku update") != -1 {
-			guild.InitializeChannels()
+		if strings.Contains(updated.Content, "/mokumoku update") {
+			guild.Initialize()
 		}
 	}
 }

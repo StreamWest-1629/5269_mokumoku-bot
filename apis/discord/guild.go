@@ -1,8 +1,8 @@
 package discord
 
 import (
+	"app/bot"
 	"errors"
-	"fmt"
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
@@ -10,17 +10,10 @@ import (
 
 type (
 	Guild struct {
-		guild      *discordgo.Guild
-		rooms      []MokuMoku
+		*discordgo.Guild
+		*bot.BranchGroup
 		categoryID string
-		randomChat *TextChat
-		todoChat   *TextChat
-		wholeVoice *VoiceChat
-	}
-
-	MokuMoku struct {
-		TextChat
-		VoiceChat
+		everyone   *discordgo.Role
 	}
 )
 
@@ -46,64 +39,163 @@ func RegisterGuild(guildId string) (guild *Guild, err error) {
 	} else if g, err := session.Guild(guildId); err != nil {
 		return nil, errors.New("cannot make discord guild instance: " + err.Error())
 	} else {
-
-		fmt.Println("make guild registed successfully")
-
 		guild = &Guild{
-			guild: g,
-			rooms: []MokuMoku{},
+			Guild: g,
 		}
-
-		// register
-		guilds[guildId] = guild
 	}
 
-	if err := guild.InitializeChannels(); err != nil {
-		fmt.Println(err.Error())
+	// make instance usecases
+	if guild.everyone, err = guild.__findEveryone(); err != nil {
+		return nil, errors.New("cannot find everyone role: " + err.Error())
 	}
+
+	// register
+	guilds[guildId] = guild
 
 	return guild, nil
 }
 
-func (g *Guild) InitializeChannels() (err error) {
-
-	// update guild
-	if g.guild, err = session.Guild(g.guild.ID); err != nil {
-		return err
-	} else if chs, err := session.GuildChannels(g.guild.ID); err != nil {
+func (g *Guild) Update() error {
+	if chs, err := session.GuildChannels(g.ID); err != nil {
 		return err
 	} else {
-		g.guild.Channels = append(g.guild.Channels, chs...)
+		g.Channels = chs
+		return nil
 	}
+}
+
+func (g *Guild) Initialize() (whole *bot.WholeChats, err error) {
+
+	// update guild
+	g.Update()
+
+	whole = &bot.WholeChats{}
 
 	// find category channel
 	if ch, err := g.__findChannel(MokuMokuCategory, discordgo.ChannelTypeGuildCategory, ""); err != nil {
-		return errors.New("cannot make category: " + err.Error())
+		return nil, errors.New("cannot make category: " + err.Error())
 	} else {
 		g.categoryID = ch.ID
 	}
 
 	if ch, err := g.__findChannel(RandomChatName, discordgo.ChannelTypeGuildText, RandomChatTopic); err != nil {
-		return errors.New("cannot make channel: " + err.Error())
+		return nil, errors.New("cannot make channel: " + err.Error())
 	} else {
-		g.randomChat = (*TextChat)(ch)
+		whole.Random = &TextChat{
+			Channel: ch,
+			parent:  g,
+		}
 	}
 
 	if ch, err := g.__findChannel(ToDoChatName, discordgo.ChannelTypeGuildText, ToDoChatTopic); err != nil {
-		return errors.New("cannot make channel: " + err.Error())
+		return nil, errors.New("cannot make channel: " + err.Error())
 	} else {
-		g.todoChat = (*TextChat)(ch)
+		whole.Todo = &TextChat{
+			Channel: ch,
+			parent:  g,
+		}
 	}
 
 	if ch, err := g.__findChannel(WholeVoiceChatName, discordgo.ChannelTypeGuildVoice, ""); err != nil {
-		return errors.New("cannot make channel: " + err.Error())
+		return nil, errors.New("cannot make channel: " + err.Error())
 	} else {
-		g.wholeVoice = (*VoiceChat)(ch)
+		whole.MokuMoku = &VoiceChat{
+			Channel: ch,
+			parent:  g,
+		}
 	}
 
-	// todo: delete later
-	session.ChannelMessageSend(g.randomChat.ID, "OK, Channels are found!")
-	return nil
+	return whole, nil
+}
+
+func (g *Guild) VoiceState(memberId string) (chatId *string) {
+	if state, err := state.VoiceState(g.ID, memberId); err != nil {
+		return nil
+	} else {
+		return &state.ChannelID
+	}
+}
+
+func (g *Guild) GetMember(userId string) (bot.MemberConn, error) {
+	member, err := session.GuildMember(g.ID, userId)
+	return (*Member)(member), err
+}
+
+func (g *Guild) GetMemberIds() ([]string, error) {
+
+	members := []string{}
+
+	for begins := ""; true; {
+		if mem, err := session.GuildMembers(g.ID, begins, 1000); err != nil {
+			return nil, errors.New("cannot get members: " + err.Error())
+		} else {
+
+			for i := range mem {
+				members = append(members, mem[i].User.ID)
+			}
+			if len(mem) < 1000 {
+				return members, nil
+			} else {
+				begins = mem[len(mem)-1].User.ID
+			}
+		}
+	}
+	return nil, errors.New("unexcepted function end")
+}
+
+func (g *Guild) MakeTextChat(name, description string) (bot.TextConn, error) {
+	if ch, err := session.GuildChannelCreateComplex(g.ID, discordgo.GuildChannelCreateData{
+		Name:     name,
+		Topic:    description,
+		Type:     discordgo.ChannelTypeGuildText,
+		ParentID: g.categoryID,
+	}); err != nil {
+		return nil, errors.New("cannot make text chat: " + err.Error())
+	} else {
+		return &TextChat{
+			Channel: ch,
+			parent:  g,
+		}, nil
+	}
+}
+
+func (g *Guild) MakeVoiceChat(name string) (bot.VoiceConn, error) {
+	if ch, err := session.GuildChannelCreateComplex(g.ID, discordgo.GuildChannelCreateData{
+		Name:     name,
+		Type:     discordgo.ChannelTypeGuildVoice,
+		ParentID: g.categoryID,
+	}); err != nil {
+		return nil, errors.New("cannot make voice chat: " + err.Error())
+	} else {
+		return &VoiceChat{
+			Channel: ch,
+			parent:  g,
+		}, nil
+	}
+}
+
+func (g *Guild) RemoveChat(chatID string) {
+	// find category
+	for i := range g.Channels {
+		if ch := g.Channels[i]; ch != nil {
+			if ch.ID == chatID && ch.ParentID == g.categoryID {
+				session.ChannelDelete(ch.ID)
+			}
+		}
+	}
+}
+
+func (g *Guild) __findEveryone() (role *discordgo.Role, err error) {
+	if roles, err := session.GuildRoles(g.ID); err != nil {
+		return nil, err
+	} else {
+		for i := range roles {
+			if roles[i].Name == "@everyone" {
+				return roles[i], nil
+			}
+		}
+		return nil, errors.New("cannot found everyone role")
+	}
 }
 
 func (g *Guild) __findChannel(findName string, findType discordgo.ChannelType, topic string) (*discordgo.Channel, error) {
@@ -111,8 +203,8 @@ func (g *Guild) __findChannel(findName string, findType discordgo.ChannelType, t
 	case discordgo.ChannelTypeGuildCategory:
 
 		// find category
-		for i := range g.guild.Channels {
-			if ch := g.guild.Channels[i]; ch != nil {
+		for i := range g.Channels {
+			if ch := g.Channels[i]; ch != nil {
 				if ch.Type == findType {
 					if ch.Name == findName {
 						return ch, nil
@@ -122,7 +214,7 @@ func (g *Guild) __findChannel(findName string, findType discordgo.ChannelType, t
 		}
 
 		// make category
-		if ch, err := session.GuildChannelCreateComplex(g.guild.ID, discordgo.GuildChannelCreateData{
+		if ch, err := session.GuildChannelCreateComplex(g.ID, discordgo.GuildChannelCreateData{
 			Name: findName,
 			Type: findType,
 		}); err != nil {
@@ -134,8 +226,8 @@ func (g *Guild) __findChannel(findName string, findType discordgo.ChannelType, t
 	case discordgo.ChannelTypeGuildText, discordgo.ChannelTypeGuildVoice:
 
 		// find channel
-		for i := range g.guild.Channels {
-			if ch := g.guild.Channels[i]; ch != nil {
+		for i := range g.Channels {
+			if ch := g.Channels[i]; ch != nil {
 				if ch.ParentID == g.categoryID && ch.Type == findType {
 					if ch.Name == findName {
 						return ch, nil
@@ -145,7 +237,7 @@ func (g *Guild) __findChannel(findName string, findType discordgo.ChannelType, t
 		}
 
 		// make channel
-		if ch, err := session.GuildChannelCreateComplex(g.guild.ID, discordgo.GuildChannelCreateData{
+		if ch, err := session.GuildChannelCreateComplex(g.ID, discordgo.GuildChannelCreateData{
 			Name:     findName,
 			Topic:    topic,
 			Type:     findType,
