@@ -4,7 +4,6 @@ import (
 	"app/apis"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -28,52 +27,26 @@ func init() {
 	}
 
 	// register event listener
-	session.AddHandler(onVoiceStateUpdate)
 	session.AddHandler(onMessageCreate)
 
-	// make state
+	// make state availabled
 	state = discordgo.NewState()
-	state.TrackEmojis, state.TrackPresences = false, false
+	state.TrackEmojis = false
 	session.StateEnabled, session.State = true, state
 
 	// open connection
 	if err := session.Open(); err != nil {
 		panic("cannot open discord bot connection: " + err.Error())
-	} else {
-		fmt.Println("discord initialize successed")
-
-		// set finalizer
-		apis.Finalizer = append(apis.Finalizer, func() {
-			session.Close()
-		})
 	}
 
+	// set finalizer
+	apis.Finalizer = append(apis.Finalizer, func() {
+		session.Close()
+	})
+
+	fmt.Println("discord initialize successed")
 }
 
-func onVoiceStateUpdate(_ *discordgo.Session, updated *discordgo.VoiceStateUpdate) {
-	checkGuildRegistered(updated.GuildID)
-}
-
-func onMessageCreate(_ *discordgo.Session, updated *discordgo.MessageCreate) {
-	guild := checkGuildRegistered(updated.GuildID)
-
-	if !updated.Author.Bot && !updated.Author.System {
-		if strings.Contains(updated.Content, "/mokumoku update") {
-			guild.Initialize()
-		}
-	}
-}
-
-func checkGuildRegistered(guildId string) *Guild {
-	guildsLock.Lock()
-	defer guildsLock.Unlock()
-
-	if guild, exist := guilds[guildId]; exist {
-		return guild
-	} else if guild, err := RegisterGuild(guildId); err != nil {
-		fmt.Println("cannot make guild registered: " + err.Error())
-		return nil
-	} else {
-		return guild
-	}
+func onMessageCreate(_ *discordgo.Session, created *discordgo.MessageCreate) {
+	// TODO: CHECK COMMAND
 }

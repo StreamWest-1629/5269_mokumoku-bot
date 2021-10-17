@@ -1,29 +1,27 @@
 package bot
 
 type (
-	MemberConn interface {
-		MakeMute(mute bool) error
-		GetID() string
+	WholeChats struct {
+		MokuMoku VoiceConn
+		Random   TextConn
+		ToDo     TextConn
 	}
 
 	ChatConn interface {
-		GetID() string
 		MakePrivate() error
-		MakeMemberAllow(memberId string) error
+		AllowAccess(memberId string) error
+		Delete()
 	}
 
 	TextConn interface {
 		ChatConn
-		Println(msgs ...interface{})
+		Println(msg string)
 	}
 
 	VoiceConn interface {
 		ChatConn
+		MakeEveryoneMute(mute bool) error
 		MoveToHere(memberId string) error
-	}
-
-	VoiceChat struct {
-		VoiceConn
-		parent *BranchGroup
+		JoinMemberIds() []string
 	}
 )
