@@ -121,7 +121,9 @@ func (g *Guild) GetWholeChats() (whole *bot.WholeChats) {
 }
 
 func (g *Guild) MemberMute(memberId string, mute bool) {
-	session.GuildMemberMute(g.ID(), memberId, mute)
+	if err := session.GuildMemberMute(g.ID(), memberId, mute); err != nil {
+		fmt.Println("cannot changed mute: " + err.Error())
+	}
 }
 
 func (g *Guild) __makeChannels() (*bot.WholeChats, error) {

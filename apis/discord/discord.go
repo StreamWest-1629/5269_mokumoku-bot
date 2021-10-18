@@ -75,7 +75,7 @@ func onVoiceStateUpdate(_ *discordgo.Session, updated *discordgo.VoiceStateUpdat
 		if updated.BeforeUpdate != nil {
 			before = updated.BeforeUpdate.ChannelID
 		}
-		event.VoiceUpdated(updated.UserID, before, updated.ChannelID)
+		event.VoiceUpdated(updated.UserID, before, updated.ChannelID, updated.Mute)
 	} else if guild, exist := SearchGuild(updated.GuildID); exist {
 		if ev := mokumoku.LaunchEvent(guild); ev != nil {
 			mokumokuRunning[guild.ID()] = ev

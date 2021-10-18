@@ -21,6 +21,7 @@ type (
 	onClose       struct{}
 	onVoiceUpdate struct {
 		MemberId, FromChatId, ToChatId string
+		Mute                           bool
 		waitGroup                      sync.WaitGroup
 	}
 )
@@ -54,12 +55,13 @@ func (e *Event) Close() {
 	e.eventListener <- onClose{}
 }
 
-func (e *Event) VoiceUpdated(memberId, fromChatId, toChatId string) {
+func (e *Event) VoiceUpdated(memberId, fromChatId, toChatId string, mute bool) {
 
-	voice := onVoiceUpdate{
+	voice := &onVoiceUpdate{
 		MemberId:   memberId,
 		FromChatId: fromChatId,
 		ToChatId:   toChatId,
+		Mute:       mute,
 	}
 
 	voice.waitGroup.Add(1)
@@ -103,14 +105,18 @@ func (m *Event) routineOnce() (isClosed bool) {
 				case onClose:
 					return true
 				case *onVoiceUpdate:
-					if event.FromChatId == whole.MokuMoku.GetID() {
-						m.MemberMute(event.MemberId, false)
+					if event.ToChatId == whole.MokuMoku.GetID() {
+						if !event.Mute {
+							m.MemberMute(event.MemberId, true)
+						}
+					} else if event.FromChatId == whole.MokuMoku.GetID() {
+						if event.Mute {
+							m.MemberMute(event.MemberId, false)
+						}
 						fmt.Println("found move from mokumoku room")
 						if len(whole.MokuMoku.JoinMemberIds()) <= 0 {
 							return true
 						}
-					} else if event.ToChatId == whole.MokuMoku.GetID() {
-						m.MemberMute(event.MemberId, true)
 					}
 				}
 				return false
@@ -138,10 +144,15 @@ func (m *Event) routineOnce() (isClosed bool) {
 			if func() bool {
 				defer event.Release()
 
-				switch event.(type) {
+				switch event := event.(type) {
 				case onClose:
 					return true
 				case onVoiceUpdate:
+					if event.ToChatId == whole.MokuMoku.GetID() {
+						if !event.Mute {
+							m.MemberMute(event.MemberId, true)
+						}
+					}
 				}
 				return false
 			}() {
