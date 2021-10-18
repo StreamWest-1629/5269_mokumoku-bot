@@ -11,6 +11,7 @@ type (
 		GetWholeChats() *WholeChats
 		MakeTextChat(name, topic string) (TextConn, error)
 		MakeVoiceChat(name string) (VoiceConn, error)
+		MemberMute(memberId string, mute bool)
 	}
 
 	Branches []Branch
@@ -61,6 +62,7 @@ func SpreadBranches(conn GroupConn) (branches Branches, err error) {
 		} else if err := branches[i%len(branches)].MoveToHere(memberIds[i]); err != nil {
 			return nil, errors.New("cannot move member to voice chat: " + err.Error())
 		}
+		conn.MemberMute(memberIds[i], false)
 	}
 
 	return branches, nil
@@ -75,7 +77,9 @@ func (b Branches) ClearBranches(conn GroupConn) error {
 	// move to mokumoku room
 	for i := range b {
 		members := b[i].JoinMemberIds()
+
 		for j := range members {
+			conn.MemberMute(members[i], true)
 			if err := mokumoku.MoveToHere(members[j]); err != nil {
 				return err
 			}

@@ -11,6 +11,7 @@ type (
 		MakePrivate() error
 		AllowAccess(memberId string) error
 		Delete()
+		GetID() string
 	}
 
 	TextConn interface {

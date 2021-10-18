@@ -4,7 +4,6 @@ import (
 	"app/bot"
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -29,16 +28,23 @@ const (
 func SearchGuild(guildId string) (guild *Guild, exist bool) {
 
 	// search guild
-	if g, err := state.Guild(guildId); err != nil {
+	g, err := state.Guild(guildId)
+	var c *discordgo.Channel
+
+	if err != nil {
 		return nil, false
-	} else if c, err := __findCategory(guildId, CategoryName); err != nil {
-		return nil, false
-	} else {
-		return &Guild{
-			guild:      g,
-			categoryID: c.ID,
-		}, true
+	} else if c, err = __findCategory(guildId, CategoryName); err != nil {
+		if c, err = session.GuildChannelCreate(guildId, CategoryName, discordgo.ChannelTypeGuildCategory); err != nil {
+			return nil, false
+		} else {
+			fmt.Println("discord guild's category added")
+		}
 	}
+
+	return &Guild{
+		guild:      g,
+		categoryID: c.ID,
+	}, true
 }
 
 func (g *Guild) ID() string {
@@ -49,7 +55,7 @@ func (g *Guild) Name() string {
 	return g.guild.Name
 }
 
-func (g *Guild) MakeTextChat(name, topic string) (vc *TextChannel, err error) {
+func (g *Guild) MakeTextChat(name, topic string) (vc bot.TextConn, err error) {
 
 	// make text chat
 	if ch, err := session.GuildChannelCreateComplex(
@@ -66,7 +72,7 @@ func (g *Guild) MakeTextChat(name, topic string) (vc *TextChannel, err error) {
 	}
 }
 
-func (g *Guild) MakeVoiceChat(name string) (vc *VoiceChannel, err error) {
+func (g *Guild) MakeVoiceChat(name string) (vc bot.VoiceConn, err error) {
 	// make voice chat
 	if ch, err := session.GuildChannelCreateComplex(
 		g.guild.ID,
@@ -112,7 +118,10 @@ func (g *Guild) GetWholeChats() (whole *bot.WholeChats) {
 	}
 
 	return
+}
 
+func (g *Guild) MemberMute(memberId string, mute bool) {
+	session.GuildMemberMute(g.ID(), memberId, mute)
 }
 
 func (g *Guild) __makeChannels() (*bot.WholeChats, error) {
@@ -154,7 +163,7 @@ func (g *Guild) __makeChannels() (*bot.WholeChats, error) {
 			Type:     discordgo.ChannelTypeGuildVoice,
 			ParentID: g.categoryID,
 			PermissionOverwrites: []*discordgo.PermissionOverwrite{
-				&discordgo.PermissionOverwrite{
+				{
 					ID:   everyone.ID,
 					Type: discordgo.PermissionOverwriteTypeRole,
 					Allow: discordgo.PermissionViewChannel |
@@ -188,7 +197,7 @@ func (g *Guild) __makeChannels() (*bot.WholeChats, error) {
 
 	if Random == nil {
 		if ch, err := session.GuildChannelCreateComplex(g.ID(), discordgo.GuildChannelCreateData{
-			Name:     ToDoName,
+			Name:     RandomName,
 			Type:     discordgo.ChannelTypeGuildText,
 			ParentID: g.categoryID,
 		}); err != nil {
@@ -206,13 +215,8 @@ func (g *Guild) __makeChannels() (*bot.WholeChats, error) {
 }
 
 func (g *Guild) __findMe() *discordgo.Member {
-	token, _ := os.LookupEnv(envKey)
-	for _, member := range g.guild.Members {
-		if member.User.Token == token && member.User.Bot {
-			return member
-		}
-	}
-	panic("cannot found me in guild member")
+	member, _ := session.GuildMember(g.ID(), ownUserId)
+	return member
 }
 
 func (g *Guild) __findEveryone() (role *discordgo.Role, err error) {
