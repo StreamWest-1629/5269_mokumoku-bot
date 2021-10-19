@@ -8,6 +8,9 @@ import (
 )
 
 func init() {
+
+	fmt.Print("heroku initializing...")
+
 	port, _ := os.LookupEnv("PORT")
 
 	http.HandleFunc("/heroku/heartbeat", func(w http.ResponseWriter, r *http.Request) {
@@ -15,6 +18,7 @@ func init() {
 		w.WriteHeader(200)
 	})
 
+	fmt.Println("ended!")
 	go http.ListenAndServe(":"+port, nil)
 	client := http.DefaultClient
 

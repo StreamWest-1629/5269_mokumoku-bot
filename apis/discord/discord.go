@@ -22,16 +22,18 @@ var (
 
 func init() {
 
+	fmt.Print("discord initializing...")
+
 	if _, exist := os.LookupEnv("DEBUG"); exist {
 		CategoryName += "-DEV"
 	}
 	// initialize session
 	if token, exist := os.LookupEnv(envKey); !exist {
-		panic("cannot found token in environment values")
+		fmt.Println("cannot found token in environment values")
 	} else if own, exist := os.LookupEnv(idKey); !exist {
-		panic("cannot found crient id in environment values")
+		fmt.Println("cannot found crient id in environment values")
 	} else if s, err := discordgo.New("Bot " + token); err != nil || s == nil {
-		panic("cannot catch session: " + err.Error())
+		fmt.Println("cannot catch session: " + err.Error())
 	} else {
 		session, ownUserId = s, own
 	}
@@ -50,7 +52,7 @@ func init() {
 
 	// open connection
 	if err := session.Open(); err != nil {
-		panic("cannot open discord bot connection: " + err.Error())
+		fmt.Println("cannot open discord bot connection: " + err.Error())
 	}
 
 	// set finalizer
@@ -58,7 +60,7 @@ func init() {
 		session.Close()
 	})
 
-	fmt.Println("discord initialize successed")
+	fmt.Println("ended!")
 }
 
 func onMessageCreate(_ *discordgo.Session, created *discordgo.MessageCreate) {
