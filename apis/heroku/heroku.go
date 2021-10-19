@@ -27,7 +27,7 @@ func init() {
 
 	for {
 		fmt.Print("heroku heart beat listening...")
-		if _, err := client.Get(url + "/heroku/heartbeat"); err != nil {
+		if _, err := client.Get(url + "heroku/heartbeat"); err != nil {
 			fmt.Println("failed to send heart beat: " + err.Error())
 		}
 		time.Sleep(20 * time.Minute)
