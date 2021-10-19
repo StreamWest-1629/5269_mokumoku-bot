@@ -3,7 +3,8 @@ package main
 import (
 	"app/apis"
 	_ "app/apis/discord"
-	_ "app/apis/heroku"
+
+	// _ "app/apis/heroku"
 	"os"
 )
 
