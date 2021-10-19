@@ -23,7 +23,10 @@ func init() {
 	go http.ListenAndServe(":"+port, nil)
 	client := http.DefaultClient
 
+	time.Sleep(30 * time.Second)
+
 	for {
+		fmt.Print("heroku heart beat listening...")
 		if _, err := client.Get(url + "/heroku/heartbeat"); err != nil {
 			fmt.Println("failed to send heart beat: " + err.Error())
 		}
