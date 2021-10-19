@@ -9,7 +9,7 @@ import (
 
 func init() {
 
-	fmt.Print("heroku initializing...")
+	fmt.Println("heroku initializing...")
 
 	port, _ := os.LookupEnv("PORT")
 	url, _ := os.LookupEnv("HEROKU_URL")
@@ -19,7 +19,9 @@ func init() {
 		w.WriteHeader(200)
 	})
 
+	fmt.Print("begin server listening...")
 	go fmt.Println("server listen ended: " + http.ListenAndServe(":"+port, nil).Error())
+	fmt.Println("ended!")
 	client := http.DefaultClient
 
 	time.Sleep(30 * time.Second)
