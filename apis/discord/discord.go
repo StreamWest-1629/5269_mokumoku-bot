@@ -22,6 +22,9 @@ var (
 
 func init() {
 
+	if _, exist := os.LookupEnv("DEBUG"); exist {
+		CategoryName += "-DEV"
+	}
 	// initialize session
 	if token, exist := os.LookupEnv(envKey); !exist {
 		panic("cannot found token in environment values")

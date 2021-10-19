@@ -4,7 +4,6 @@ import (
 	"app/bot"
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -29,12 +28,6 @@ var (
 	CategoryName = "もくもくエリア"
 )
 
-func init() {
-	if _, exist := os.LookupEnv("DEBUG"); exist {
-		CategoryName += "-dev"
-	}
-}
-
 func SearchGuild(guildId string) (guild *Guild, exist bool) {
 
 	// search guild
@@ -50,6 +43,8 @@ func SearchGuild(guildId string) (guild *Guild, exist bool) {
 			fmt.Println("discord guild's category added")
 		}
 	}
+
+	fmt.Println("Category is " + c.Name)
 
 	return &Guild{
 		guild:      g,
@@ -149,18 +144,20 @@ func (g *Guild) __makeChannels() (*bot.WholeChats, error) {
 
 	// search channels
 	for _, ch := range g.guild.Channels {
-		switch ch.Type {
-		case discordgo.ChannelTypeGuildVoice:
-			switch ch.Name {
-			case MokuMokuName:
-				MokuMoku = (*VoiceChannel)(ch)
-			}
-		case discordgo.ChannelTypeGuildText:
-			switch ch.Name {
-			case RandomName:
-				Random = (*TextChannel)(ch)
-			case ToDoName:
-				ToDo = (*TextChannel)(ch)
+		if ch.ParentID == g.categoryID {
+			switch ch.Type {
+			case discordgo.ChannelTypeGuildVoice:
+				switch ch.Name {
+				case MokuMokuName:
+					MokuMoku = (*VoiceChannel)(ch)
+				}
+			case discordgo.ChannelTypeGuildText:
+				switch ch.Name {
+				case RandomName:
+					Random = (*TextChannel)(ch)
+				case ToDoName:
+					ToDo = (*TextChannel)(ch)
+				}
 			}
 		}
 	}

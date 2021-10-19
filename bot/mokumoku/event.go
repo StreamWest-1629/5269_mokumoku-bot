@@ -120,6 +120,10 @@ func (m *Event) routineOnce() (isClosed bool) {
 		}
 	}
 
+	if len(whole.MokuMoku.JoinMemberIds()) <= 0 {
+		return true
+	}
+
 	// breaking
 	fmt.Println("Begin breaking time")
 	whole.Random.Println(BreakingBegining)
