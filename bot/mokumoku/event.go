@@ -3,7 +3,6 @@ package mokumoku
 import (
 	"app/bot"
 	"fmt"
-	"sync"
 	"time"
 )
 
@@ -18,20 +17,24 @@ type (
 		Release()
 	}
 
-	onClose       struct{}
-	onVoiceUpdate struct {
+	onClose     struct{}
+	onCheckMute struct {
 		MemberId, FromChatId, ToChatId string
-		Mute                           bool
-		waitGroup                      sync.WaitGroup
+		result                         chan bool
 	}
 )
 
-func (_ onClose) Release()       {}
-func (v onVoiceUpdate) Release() { v.waitGroup.Done() }
+func (onClose) Release()     {}
+func (onCheckMute) Release() {}
 
 const (
-	MokuMokuMinute = 52 * time.Second
-	BreakingMinute = 17 * time.Second
+	MokuMokuMinute = 52 * time.Minute
+	BreakingMinute = 17 * time.Minute
+)
+
+const (
+	MokuMokuBegining = "もくもく会さぎょう部はじめます！！頑張ってください！！"
+	BreakingBegining = "もくもく会やすみ時間はじまります！！しっかりやすんで次のもくもくに備えましょう！！"
 )
 
 func LaunchEvent(conn bot.GroupConn) *Event {
@@ -55,18 +58,19 @@ func (e *Event) Close() {
 	e.eventListener <- onClose{}
 }
 
-func (e *Event) VoiceUpdated(memberId, fromChatId, toChatId string, mute bool) {
+func (e *Event) CheckMute(memberId, fromChatId, toChatId string) bool {
 
-	voice := &onVoiceUpdate{
+	voice := &onCheckMute{
 		MemberId:   memberId,
 		FromChatId: fromChatId,
 		ToChatId:   toChatId,
-		Mute:       mute,
+		result:     make(chan bool, 1),
 	}
 
-	voice.waitGroup.Add(1)
+	defer close(voice.result)
+
 	e.eventListener <- voice
-	voice.waitGroup.Wait()
+	return <-voice.result
 
 }
 
@@ -87,6 +91,7 @@ func (m *Event) routineOnce() (isClosed bool) {
 
 	// mokumoku
 	fmt.Println("Begin mokumoku time")
+	whole.Random.Println(MokuMokuBegining)
 	timer := time.NewTimer(MokuMokuMinute)
 
 	for i, members := 0, whole.MokuMoku.JoinMemberIds(); i < len(members); i++ {
@@ -104,20 +109,9 @@ func (m *Event) routineOnce() (isClosed bool) {
 				switch event := event.(type) {
 				case onClose:
 					return true
-				case *onVoiceUpdate:
-					if event.ToChatId == whole.MokuMoku.GetID() {
-						if !event.Mute {
-							m.MemberMute(event.MemberId, true)
-						}
-					} else if event.FromChatId == whole.MokuMoku.GetID() {
-						if event.Mute {
-							m.MemberMute(event.MemberId, false)
-						}
-						fmt.Println("found move from mokumoku room")
-						if len(whole.MokuMoku.JoinMemberIds()) <= 0 {
-							return true
-						}
-					}
+				case *onCheckMute:
+					event.result <- event.ToChatId == whole.MokuMoku.GetID()
+					return len(whole.MokuMoku.JoinMemberIds()) <= 0
 				}
 				return false
 			}() {
@@ -128,6 +122,7 @@ func (m *Event) routineOnce() (isClosed bool) {
 
 	// breaking
 	fmt.Println("Begin breaking time")
+	whole.Random.Println(BreakingBegining)
 	timer = time.NewTimer(BreakingMinute)
 
 	branches, err := bot.SpreadBranches(m.GroupConn)
@@ -147,12 +142,8 @@ func (m *Event) routineOnce() (isClosed bool) {
 				switch event := event.(type) {
 				case onClose:
 					return true
-				case onVoiceUpdate:
-					if event.ToChatId == whole.MokuMoku.GetID() {
-						if !event.Mute {
-							m.MemberMute(event.MemberId, true)
-						}
-					}
+				case onCheckMute:
+					event.result <- event.ToChatId == whole.MokuMoku.GetID()
 				}
 				return false
 			}() {

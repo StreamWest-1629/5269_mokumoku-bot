@@ -70,18 +70,26 @@ func onMessageCreate(_ *discordgo.Session, created *discordgo.MessageCreate) {
 func onVoiceStateUpdate(_ *discordgo.Session, updated *discordgo.VoiceStateUpdate) {
 	if event, running := mokumokuRunning[updated.GuildID]; running {
 		before := ""
-		fmt.Println("found running discord' voice state updates")
-		fmt.Println("launch event: ", *event)
 		if updated.BeforeUpdate != nil {
 			before = updated.BeforeUpdate.ChannelID
 		}
-		event.VoiceUpdated(updated.UserID, before, updated.ChannelID, updated.Mute)
+
+		// check mute
+		if updated.ChannelID != "" {
+			if mute := event.CheckMute(updated.UserID, before, updated.ChannelID); updated.Mute != mute {
+				session.GuildMemberMute(updated.GuildID, updated.UserID, mute)
+			}
+		}
+
 	} else if guild, exist := SearchGuild(updated.GuildID); exist {
 		if ev := mokumoku.LaunchEvent(guild); ev != nil {
 			mokumokuRunning[guild.ID()] = ev
 			ev.OnClose = func() {
 				delete(mokumokuRunning, guild.ID())
 			}
+		} else if updated.Mute {
+			// release mute
+			session.GuildMemberMute(updated.GuildID, updated.UserID, false)
 		}
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"app/bot"
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -17,13 +18,22 @@ type (
 )
 
 const (
-	CategoryName = "もくもくエリア"
 	MokuMokuName = "もくもく"
 	RandomName   = "おしゃべり"
 	RandomTopic  = "おしゃべりをするところです。作業しながら思ったことや感じたことなどメモしておくのによいです。"
 	ToDoName     = "すること"
 	ToDoTopic    = "今日することをメモするところです。資格試験勉強から朝食を食べるまで、今日することをメモするのに使ってください。書くかどうかは任せます。"
 )
+
+var (
+	CategoryName = "もくもくエリア"
+)
+
+func init() {
+	if _, exist := os.LookupEnv("DEBUG"); exist {
+		CategoryName += "-dev"
+	}
+}
 
 func SearchGuild(guildId string) (guild *Guild, exist bool) {
 
