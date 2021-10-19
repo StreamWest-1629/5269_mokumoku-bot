@@ -20,7 +20,7 @@ func init() {
 	})
 
 	fmt.Println("ended!")
-	go http.ListenAndServe(":"+port, nil)
+	go fmt.Println("server listen ended: " + http.ListenAndServe(":"+port, nil).Error())
 	client := http.DefaultClient
 
 	time.Sleep(30 * time.Second)
