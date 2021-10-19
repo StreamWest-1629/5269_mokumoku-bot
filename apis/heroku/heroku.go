@@ -19,15 +19,17 @@ func init() {
 		w.WriteHeader(200)
 	})
 
-	fmt.Println("ended!")
 	go fmt.Println("server listen ended: " + http.ListenAndServe(":"+port, nil).Error())
 	client := http.DefaultClient
 
 	time.Sleep(30 * time.Second)
+	url += "heroku/heartbeat"
+
+	fmt.Println("ended!")
 
 	for {
-		fmt.Print("heroku heart beat listening...")
-		if _, err := client.Get(url + "heroku/heartbeat"); err != nil {
+		fmt.Print("heroku heart beat listening(" + url + ")...")
+		if _, err := client.Get(url); err != nil {
 			fmt.Println("failed to send heart beat: " + err.Error())
 		}
 		time.Sleep(20 * time.Minute)
