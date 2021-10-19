@@ -44,8 +44,6 @@ func SearchGuild(guildId string) (guild *Guild, exist bool) {
 		}
 	}
 
-	fmt.Println("Category is " + c.Name)
-
 	return &Guild{
 		guild:      g,
 		categoryID: c.ID,
