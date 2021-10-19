@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func init() {
+func HerokuRouter() {
 
 	fmt.Println("heroku initializing...")
 
@@ -19,7 +19,7 @@ func init() {
 		w.WriteHeader(200)
 	})
 
-	fmt.Print("begin server listening...")
+	fmt.Println("begin server listening...")
 	go fmt.Println("server listen ended: " + http.ListenAndServe(":"+port, nil).Error())
 	fmt.Println("ended!")
 	client := http.DefaultClient
