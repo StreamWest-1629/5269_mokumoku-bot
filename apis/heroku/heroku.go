@@ -12,6 +12,7 @@ func init() {
 	fmt.Print("heroku initializing...")
 
 	port, _ := os.LookupEnv("PORT")
+	url, _ := os.LookupEnv("HEROKU_URL")
 
 	http.HandleFunc("/heroku/heartbeat", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("heart beat listened")
@@ -23,7 +24,7 @@ func init() {
 	client := http.DefaultClient
 
 	for {
-		if _, err := client.Get("http://localhost:" + port + "/heroku/heartbeat"); err != nil {
+		if _, err := client.Get(url + "/heroku/heartbeat"); err != nil {
 			fmt.Println("failed to send heart beat: " + err.Error())
 		}
 		time.Sleep(20 * time.Minute)
