@@ -20,7 +20,7 @@ func HerokuRouter() {
 	})
 
 	fmt.Println("begin server listening...")
-	go fmt.Println("server listen ended: " + http.ListenAndServe(":"+port, nil).Error())
+	go http.ListenAndServe(":"+port, nil).Error()
 	fmt.Println("ended!")
 	client := http.DefaultClient
 
