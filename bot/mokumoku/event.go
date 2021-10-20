@@ -3,6 +3,7 @@ package mokumoku
 import (
 	"app/bot"
 	"fmt"
+	"os"
 	"time"
 )
 
@@ -27,7 +28,7 @@ type (
 func (onClose) Release()     {}
 func (onCheckMute) Release() {}
 
-const (
+var (
 	MokuMokuMinute = 52 * time.Minute
 	BreakingMinute = 17 * time.Minute
 )
@@ -36,6 +37,13 @@ const (
 	MokuMokuBegining = "もくもく会さぎょう部はじめます！！頑張ってください！！"
 	BreakingBegining = "もくもく会やすみ時間はじまります！！しっかりやすんで次のもくもくに備えましょう！！"
 )
+
+func init() {
+	if _, exist := os.LookupEnv("DEBUG"); exist {
+		MokuMokuMinute /= 60
+		BreakingMinute /= 60
+	}
+}
 
 func LaunchEvent(conn bot.GroupConn) *Event {
 

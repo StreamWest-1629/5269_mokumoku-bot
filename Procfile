@@ -1,1 +1,1 @@
-Web: app
+web: app

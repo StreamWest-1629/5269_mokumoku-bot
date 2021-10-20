@@ -19,15 +19,20 @@ func HerokuRouter() {
 		w.WriteHeader(200)
 	})
 
-	fmt.Println("begin server listening...")
-	go http.ListenAndServe(":"+port, nil).Error()
+	fmt.Print("begin server listening...")
+	go func() {
+		if err := http.ListenAndServe(":"+port, nil); err != nil {
+			fmt.Println(err.Error())
+		}
+	}()
 	fmt.Println("ended!")
 	client := http.DefaultClient
+	client.Timeout = 10 * time.Second
+
+	url += "heroku/heartbeat"
+	fmt.Println("heroku initializing ended!")
 
 	time.Sleep(30 * time.Second)
-	url += "heroku/heartbeat"
-
-	fmt.Println("ended!")
 
 	for {
 		fmt.Print("heroku heart beat listening(" + url + ")...")
