@@ -48,7 +48,7 @@ func init() {
 
 func LaunchEvent(conn bot.GroupConn, whole *bot.EventArgs) *Event {
 
-	if len(conn.GetWholeChats().MokuMoku.JoinMemberIds()) > 0 {
+	if len(whole.MokuMoku.JoinMemberIds()) > 0 {
 
 		event := (&Event{
 			GroupConn:     conn,
@@ -105,7 +105,9 @@ func (e *Event) routineOnce() (isClosed bool) {
 	timer := time.NewTimer(MokuMokuMinute)
 
 	for i, members := 0, whole.MokuMoku.JoinMemberIds(); i < len(members); i++ {
-		e.MemberMute(members[i], true)
+		if _, exist := whole.MuteIgnore[members[i]]; !exist {
+			e.MemberMute(members[i], true)
+		}
 	}
 
 	for isContinue := true; isContinue; {
@@ -114,14 +116,21 @@ func (e *Event) routineOnce() (isClosed bool) {
 			isContinue = false
 		case event := <-e.eventListener:
 			if func() bool {
+				fmt.Println(event)
 				defer event.Release()
 
 				switch event := event.(type) {
 				case onClose:
 					return true
 				case *onCheckMute:
-					event.result <- event.ToChatId == whole.MokuMoku.GetID()
-					return len(whole.MokuMoku.JoinMemberIds()) <= 0
+					if _, exist := whole.MuteIgnore[event.MemberId]; !exist {
+						event.result <- event.ToChatId == whole.MokuMoku.GetID()
+
+						// check continue event
+						return len(whole.MokuMoku.JoinMemberIds()) < whole.MinContinueMembers
+					} else {
+						event.result <- false
+					}
 				}
 				return false
 			}() {
@@ -130,7 +139,7 @@ func (e *Event) routineOnce() (isClosed bool) {
 		}
 	}
 
-	if len(whole.MokuMoku.JoinMemberIds()) <= 0 {
+	if len(whole.MokuMoku.JoinMemberIds()) < whole.MinContinueMembers {
 		return true
 	}
 
@@ -139,7 +148,7 @@ func (e *Event) routineOnce() (isClosed bool) {
 	whole.Random.Println(BreakingBegining)
 	timer = time.NewTimer(BreakingMinute)
 
-	branches, err := bot.SpreadBranches(e.GroupConn)
+	branches, err := bot.SpreadBranches(e.GroupConn, whole)
 	if err != nil {
 		fmt.Println(err.Error())
 		return true
@@ -157,7 +166,11 @@ func (e *Event) routineOnce() (isClosed bool) {
 				case onClose:
 					return true
 				case onCheckMute:
-					event.result <- event.ToChatId == whole.MokuMoku.GetID()
+					if _, exist := whole.MuteIgnore[event.MemberId]; !exist {
+						event.result <- event.ToChatId == whole.MokuMoku.GetID()
+					} else {
+						event.result <- false
+					}
 				}
 				return false
 			}() {
@@ -166,11 +179,11 @@ func (e *Event) routineOnce() (isClosed bool) {
 		}
 	}
 
-	if err := branches.ClearBranches(e.GroupConn); err != nil {
+	if err := branches.ClearBranches(e.GroupConn, whole); err != nil {
 		fmt.Println(err.Error())
 		return true
 	}
 
 	// check member
-	return len(whole.MokuMoku.JoinMemberIds()) <= 0
+	return len(whole.MokuMoku.JoinMemberIds()) < whole.MinContinueMembers
 }

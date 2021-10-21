@@ -6,6 +6,7 @@ type (
 		Random             TextConn
 		ToDo               TextConn
 		BranchIgnore       map[string]interface{}
+		MuteIgnore         map[string]interface{}
 		MinLaunchMembers   int
 		MinContinueMembers int
 	}

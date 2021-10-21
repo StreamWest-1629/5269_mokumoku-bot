@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -18,6 +19,7 @@ var (
 	state           *discordgo.State
 	ownUserId       string
 	mokumokuRunning = map[string]*mokumoku.Event{}
+	lock            = sync.Mutex{}
 )
 
 func init() {
@@ -73,11 +75,15 @@ func onMessageCreate(_ *discordgo.Session, created *discordgo.MessageCreate) {
 }
 
 func onVoiceStateUpdate(_ *discordgo.Session, updated *discordgo.VoiceStateUpdate) {
+	lock.Lock()
 	if event, running := mokumokuRunning[updated.GuildID]; running {
+		lock.Unlock()
 		before := ""
 		if updated.BeforeUpdate != nil {
 			before = updated.BeforeUpdate.ChannelID
 		}
+
+		fmt.Println(updated.VoiceState)
 
 		// check mute
 		if updated.ChannelID != "" {
@@ -87,22 +93,23 @@ func onVoiceStateUpdate(_ *discordgo.Session, updated *discordgo.VoiceStateUpdat
 		}
 
 	} else if guild, exist := SearchGuild(updated.GuildID); exist {
+		defer lock.Unlock()
 		args := guild.GetWholeChats()
 		if ev := mokumoku.LaunchEvent(guild, args); ev != nil {
 
 			// event begin to run
-			mokumokuRunning[guild.ID()] = ev
 			ev.OnClose = func() {
 				session.ChannelVoiceJoin(guild.guild.ID, "", false, false)
 				delete(mokumokuRunning, guild.ID())
 			}
 
 			session.ChannelVoiceJoin(guild.guild.ID, args.MokuMoku.GetID(), false, false)
+			mokumokuRunning[guild.ID()] = ev
 
 		} else if updated.Mute {
 
 			// bitween test and debug environment
-			if ch, err := state.Channel(updated.ChannelID); err == nil && ch.Name != MokuMokuName {
+			if ch, err := session.Channel(updated.ChannelID); err == nil && ch.Name != MokuMokuName {
 				// release mute
 				session.GuildMemberMute(updated.GuildID, updated.UserID, false)
 			}

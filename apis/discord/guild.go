@@ -221,6 +221,9 @@ func (g *Guild) __makeChannels() (*bot.EventArgs, error) {
 		BranchIgnore: map[string]interface{}{
 			ownUserId: nil,
 		},
+		MuteIgnore: map[string]interface{}{
+			ownUserId: nil,
+		},
 		MinLaunchMembers:   1,
 		MinContinueMembers: 2,
 	}, nil

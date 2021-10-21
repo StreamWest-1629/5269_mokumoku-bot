@@ -8,7 +8,6 @@ import (
 
 type (
 	GroupConn interface {
-		GetWholeChats() *EventArgs
 		MakeTextChat(name, topic string) (TextConn, error)
 		MakeVoiceChat(name string) (VoiceConn, error)
 		MemberMute(memberId string, mute bool)
@@ -24,17 +23,16 @@ type (
 
 const MaxBranchMembers = 5
 
-func SpreadBranches(conn GroupConn) (branches Branches, err error) {
+func SpreadBranches(conn GroupConn, args *EventArgs) (branches Branches, err error) {
 
 	const BranchTopic = "やすみじかんは17分です。人とのんびりはなしながらやすみましょう。作業時間になったら自動で戻ります。会話記録は残りません。"
 
 	// get mokumoku members
-	whole := conn.GetWholeChats()
 	memberIds := []string{}
 
 	// check member is ignored or not
-	for i, ids := 0, whole.MokuMoku.JoinMemberIds(); i < len(ids); i++ {
-		if _, exist := whole.BranchIgnore[ids[i]]; !exist {
+	for i, ids := 0, args.MokuMoku.JoinMemberIds(); i < len(ids); i++ {
+		if _, exist := args.BranchIgnore[ids[i]]; !exist {
 			memberIds = append(memberIds, ids[i])
 		}
 	}
@@ -75,11 +73,10 @@ func SpreadBranches(conn GroupConn) (branches Branches, err error) {
 	return branches, nil
 }
 
-func (b Branches) ClearBranches(conn GroupConn) error {
+func (b Branches) ClearBranches(conn GroupConn, args *EventArgs) error {
 
 	// get mokumoku branch
-	whole := conn.GetWholeChats()
-	mokumoku := whole.MokuMoku
+	mokumoku := args.MokuMoku
 
 	// move to mokumoku room
 	for i := range b {
