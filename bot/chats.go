@@ -1,11 +1,13 @@
 package bot
 
 type (
-	WholeChats struct {
-		MokuMoku VoiceConn
-		Random   TextConn
-		ToDo     TextConn
-		BotID    string
+	EventArgs struct {
+		MokuMoku           VoiceConn
+		Random             TextConn
+		ToDo               TextConn
+		BranchIgnore       map[string]interface{}
+		MinLaunchMembers   int
+		MinContinueMembers int
 	}
 
 	ChatConn interface {

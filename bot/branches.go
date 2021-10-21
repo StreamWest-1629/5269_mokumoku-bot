@@ -8,7 +8,7 @@ import (
 
 type (
 	GroupConn interface {
-		GetWholeChats() *WholeChats
+		GetWholeChats() *EventArgs
 		MakeTextChat(name, topic string) (TextConn, error)
 		MakeVoiceChat(name string) (VoiceConn, error)
 		MemberMute(memberId string, mute bool)

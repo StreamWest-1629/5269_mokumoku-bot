@@ -10,7 +10,7 @@ import (
 type (
 	Event struct {
 		bot.GroupConn
-		*bot.WholeChats
+		*bot.EventArgs
 		eventListener chan __Event
 		OnClose       func()
 	}
@@ -46,14 +46,14 @@ func init() {
 	}
 }
 
-func LaunchEvent(conn bot.GroupConn, whole *bot.WholeChats) *Event {
+func LaunchEvent(conn bot.GroupConn, whole *bot.EventArgs) *Event {
 
 	if len(conn.GetWholeChats().MokuMoku.JoinMemberIds()) > 0 {
 
 		event := (&Event{
 			GroupConn:     conn,
 			eventListener: make(chan __Event),
-			WholeChats:    whole,
+			EventArgs:     whole,
 		})
 		go event.routine()
 
@@ -97,7 +97,7 @@ func (e *Event) routine() {
 
 func (e *Event) routineOnce() (isClosed bool) {
 
-	whole := e.WholeChats
+	whole := e.EventArgs
 
 	// mokumoku
 	fmt.Println("Begin mokumoku time")

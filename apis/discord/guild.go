@@ -12,7 +12,7 @@ type (
 	Guild struct {
 		guild      *discordgo.Guild
 		categoryID string
-		wholeCache *bot.WholeChats
+		wholeCache *bot.EventArgs
 	}
 )
 
@@ -90,9 +90,9 @@ func (g *Guild) MakeVoiceChat(name string) (vc bot.VoiceConn, err error) {
 	}
 }
 
-func (g *Guild) GetWholeChats() (whole *bot.WholeChats) {
+func (g *Guild) GetWholeChats() (whole *bot.EventArgs) {
 
-	makeChan := func() (whole *bot.WholeChats) {
+	makeChan := func() (whole *bot.EventArgs) {
 		if whole, err := g.__makeChannels(); err != nil {
 			fmt.Println("cannot make whole chat instance: " + err.Error())
 			return nil
@@ -129,7 +129,7 @@ func (g *Guild) MemberMute(memberId string, mute bool) {
 	}
 }
 
-func (g *Guild) __makeChannels() (*bot.WholeChats, error) {
+func (g *Guild) __makeChannels() (*bot.EventArgs, error) {
 
 	var (
 		MokuMoku *VoiceChannel = nil
@@ -214,11 +214,15 @@ func (g *Guild) __makeChannels() (*bot.WholeChats, error) {
 		}
 	}
 
-	return &bot.WholeChats{
+	return &bot.EventArgs{
 		MokuMoku: MokuMoku,
 		Random:   Random,
 		ToDo:     ToDo,
-		BotID:    ownUserId,
+		BranchIgnore: map[string]interface{}{
+			ownUserId: nil,
+		},
+		MinLaunchMembers:   1,
+		MinContinueMembers: 2,
 	}, nil
 }
 
