@@ -5,6 +5,7 @@ type (
 		MokuMoku VoiceConn
 		Random   TextConn
 		ToDo     TextConn
+		BotID    string
 	}
 
 	ChatConn interface {

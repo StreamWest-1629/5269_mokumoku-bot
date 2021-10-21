@@ -218,6 +218,7 @@ func (g *Guild) __makeChannels() (*bot.WholeChats, error) {
 		MokuMoku: MokuMoku,
 		Random:   Random,
 		ToDo:     ToDo,
+		BotID:    ownUserId,
 	}, nil
 }
 
