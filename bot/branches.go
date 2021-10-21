@@ -30,7 +30,14 @@ func SpreadBranches(conn GroupConn) (branches Branches, err error) {
 
 	// get mokumoku members
 	whole := conn.GetWholeChats()
-	memberIds := whole.MokuMoku.JoinMemberIds()
+	memberIds := []string{}
+
+	// check member is ignored or not
+	for i, ids := 0, whole.MokuMoku.JoinMemberIds(); i < len(ids); i++ {
+		if _, exist := whole.BranchIgnore[ids[i]]; !exist {
+			memberIds = append(memberIds, ids[i])
+		}
+	}
 
 	// shuffle
 	rand.Shuffle(len(memberIds), func(i, j int) { memberIds[i], memberIds[j] = memberIds[j], memberIds[i] })
