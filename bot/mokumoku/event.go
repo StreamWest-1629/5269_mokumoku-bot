@@ -10,6 +10,7 @@ import (
 type (
 	Event struct {
 		bot.GroupConn
+		*bot.WholeChats
 		eventListener chan __Event
 		OnClose       func()
 	}
@@ -45,13 +46,14 @@ func init() {
 	}
 }
 
-func LaunchEvent(conn bot.GroupConn) *Event {
+func LaunchEvent(conn bot.GroupConn, whole *bot.WholeChats) *Event {
 
 	if len(conn.GetWholeChats().MokuMoku.JoinMemberIds()) > 0 {
 
 		event := (&Event{
 			GroupConn:     conn,
 			eventListener: make(chan __Event),
+			WholeChats:    whole,
 		})
 		go event.routine()
 
@@ -86,16 +88,16 @@ func (e *Event) onClose() {
 	e.OnClose()
 }
 
-func (m *Event) routine() {
-	for !m.routineOnce() {
+func (e *Event) routine() {
+	for !e.routineOnce() {
 	}
-	m.onClose()
+	e.onClose()
 	fmt.Println("mokumoku event closed")
 }
 
-func (m *Event) routineOnce() (isClosed bool) {
+func (e *Event) routineOnce() (isClosed bool) {
 
-	whole := m.GetWholeChats()
+	whole := e.WholeChats
 
 	// mokumoku
 	fmt.Println("Begin mokumoku time")
@@ -103,14 +105,14 @@ func (m *Event) routineOnce() (isClosed bool) {
 	timer := time.NewTimer(MokuMokuMinute)
 
 	for i, members := 0, whole.MokuMoku.JoinMemberIds(); i < len(members); i++ {
-		m.MemberMute(members[i], true)
+		e.MemberMute(members[i], true)
 	}
 
 	for isContinue := true; isContinue; {
 		select {
 		case <-timer.C:
 			isContinue = false
-		case event := <-m.eventListener:
+		case event := <-e.eventListener:
 			if func() bool {
 				defer event.Release()
 
@@ -137,7 +139,7 @@ func (m *Event) routineOnce() (isClosed bool) {
 	whole.Random.Println(BreakingBegining)
 	timer = time.NewTimer(BreakingMinute)
 
-	branches, err := bot.SpreadBranches(m.GroupConn)
+	branches, err := bot.SpreadBranches(e.GroupConn)
 	if err != nil {
 		fmt.Println(err.Error())
 		return true
@@ -147,7 +149,7 @@ func (m *Event) routineOnce() (isClosed bool) {
 		select {
 		case <-timer.C:
 			isContinue = false
-		case event := <-m.eventListener:
+		case event := <-e.eventListener:
 			if func() bool {
 				defer event.Release()
 
@@ -164,7 +166,7 @@ func (m *Event) routineOnce() (isClosed bool) {
 		}
 	}
 
-	if err := branches.ClearBranches(m.GroupConn); err != nil {
+	if err := branches.ClearBranches(e.GroupConn); err != nil {
 		fmt.Println(err.Error())
 		return true
 	}

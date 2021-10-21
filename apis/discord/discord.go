@@ -87,7 +87,7 @@ func onVoiceStateUpdate(_ *discordgo.Session, updated *discordgo.VoiceStateUpdat
 		}
 
 	} else if guild, exist := SearchGuild(updated.GuildID); exist {
-		if ev := mokumoku.LaunchEvent(guild); ev != nil {
+		if ev := mokumoku.LaunchEvent(guild, guild.GetWholeChats()); ev != nil {
 			mokumokuRunning[guild.ID()] = ev
 			ev.OnClose = func() {
 				delete(mokumokuRunning, guild.ID())
