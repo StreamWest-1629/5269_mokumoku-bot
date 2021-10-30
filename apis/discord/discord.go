@@ -83,8 +83,6 @@ func onVoiceStateUpdate(_ *discordgo.Session, updated *discordgo.VoiceStateUpdat
 			before = updated.BeforeUpdate.ChannelID
 		}
 
-		fmt.Println(updated.VoiceState)
-
 		// check mute
 		if updated.ChannelID != "" {
 			if mute := event.CheckMute(updated.UserID, before, updated.ChannelID); updated.Mute != mute {

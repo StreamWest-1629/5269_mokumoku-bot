@@ -130,6 +130,27 @@ func (vc *VoiceChannel) JoinMemberIds() []string {
 	return members
 }
 
+func (vc *VoiceChannel) GetNumJoining() int {
+
+	numMember := 0
+
+	state.RLock()
+	defer state.RUnlock()
+
+	guild, err := state.Guild(vc.GuildID)
+	if err != nil {
+		return numMember
+	}
+
+	for i := range guild.VoiceStates {
+		if guild.VoiceStates[i].ChannelID == vc.ID {
+			numMember++
+		}
+	}
+
+	return numMember
+}
+
 func (ch *Chat) __FindEveryone() (g *discordgo.Role, err error) {
 	if g, exist := SearchGuild(ch.GuildID); !exist {
 		return nil, errors.New("cannot found member")

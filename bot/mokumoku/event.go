@@ -32,11 +32,18 @@ func (onCheckMute) Release() {}
 var (
 	MokuMokuMinute = 52 * time.Minute
 	BreakingMinute = 17 * time.Minute
+	JST            = 9 * time.Hour
 )
 
 const (
-	MokuMokuBegining = "もくもく会さぎょう部はじめます！！頑張ってください！！"
-	BreakingBegining = "もくもく会やすみ時間はじまります！！しっかりやすんで次のもくもくに備えましょう！！"
+	MokuMokuExplain = "```\n" +
+		"このもくもく会はボットが管理します。\n" +
+		"はじめの52分がもくもく時間でミュートとなり、つぎの17分が休憩時間で3-5人のルームに振り分けられる、というルーチンで進められます。\n" +
+		"ボイスチャットの移動を含め、すべてボットが管理するので安心して作業（52分）と休憩（17分）のルーチンをお楽しみください！！\n" +
+		"```"
+	MokuMokuBegining = "もくもく会さぎょう部はじめます！！予定時間は15時04分頃までです！！頑張ってください！！"
+	BreakingBegining = "もくもく会やすみ時間はじまります！！予定時間は15時04分頃までです！！しっかりやすんで次のもくもくに備えましょう！！"
+	MokuMokuEnded    = "さぎょうお疲れさまでした！！また是非いらしてください！！"
 )
 
 func init() {
@@ -89,9 +96,11 @@ func (e *Event) onClose() {
 }
 
 func (e *Event) routine() {
+	e.EventArgs.Random.Println(MokuMokuExplain)
 	for !e.routineOnce() {
 	}
 	e.onClose()
+	e.EventArgs.Random.Println(MokuMokuEnded)
 	fmt.Println("mokumoku event closed")
 }
 
@@ -101,7 +110,7 @@ func (e *Event) routineOnce() (isClosed bool) {
 
 	// mokumoku
 	fmt.Println("Begin mokumoku time")
-	whole.Random.Println(MokuMokuBegining)
+	whole.Random.Println(time.Now().Add(JST + MokuMokuMinute).Format(MokuMokuBegining))
 	timer := time.NewTimer(MokuMokuMinute)
 
 	for i, members := 0, whole.MokuMoku.JoinMemberIds(); i < len(members); i++ {
@@ -116,7 +125,6 @@ func (e *Event) routineOnce() (isClosed bool) {
 			isContinue = false
 		case event := <-e.eventListener:
 			if func() bool {
-				fmt.Println(event)
 				defer event.Release()
 
 				switch event := event.(type) {
@@ -127,7 +135,7 @@ func (e *Event) routineOnce() (isClosed bool) {
 						event.result <- event.ToChatId == whole.MokuMoku.GetID()
 
 						// check continue event
-						return len(whole.MokuMoku.JoinMemberIds()) < whole.MinContinueMembers
+						return whole.MokuMoku.GetNumJoining() < whole.MinContinueMembers
 					} else {
 						event.result <- false
 					}
@@ -145,7 +153,7 @@ func (e *Event) routineOnce() (isClosed bool) {
 
 	// breaking
 	fmt.Println("Begin breaking time")
-	whole.Random.Println(BreakingBegining)
+	whole.Random.Println(time.Now().Add(JST + MokuMokuMinute).Format(BreakingBegining))
 	timer = time.NewTimer(BreakingMinute)
 
 	branches, err := bot.SpreadBranches(e.GroupConn, whole)
@@ -165,7 +173,7 @@ func (e *Event) routineOnce() (isClosed bool) {
 				switch event := event.(type) {
 				case onClose:
 					return true
-				case onCheckMute:
+				case *onCheckMute:
 					if _, exist := whole.MuteIgnore[event.MemberId]; !exist {
 						event.result <- event.ToChatId == whole.MokuMoku.GetID()
 					} else {

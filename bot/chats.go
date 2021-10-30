@@ -28,5 +28,6 @@ type (
 		MakeEveryoneMute(mute bool) error
 		MoveToHere(memberId string) error
 		JoinMemberIds() []string
+		GetNumJoining() int
 	}
 )
