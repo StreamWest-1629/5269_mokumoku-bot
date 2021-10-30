@@ -153,7 +153,7 @@ func (e *Event) routineOnce() (isClosed bool) {
 
 	// breaking
 	fmt.Println("Begin breaking time")
-	whole.Random.Println(time.Now().Add(JST + MokuMokuMinute).Format(BreakingBegining))
+	whole.Random.Println(time.Now().Add(JST + BreakingMinute).Format(BreakingBegining))
 	timer = time.NewTimer(BreakingMinute)
 
 	branches, err := bot.SpreadBranches(e.GroupConn, whole)
