@@ -58,16 +58,45 @@ func (g *Guild) Name() string {
 	return g.guild.Name
 }
 
-func (g *Guild) MakeTextChat(name, topic string) (vc bot.TextConn, err error) {
+func (g *Guild) MakePrivateTextChat(name, topic string, allowMemberIds []string) (vc bot.TextConn, err error) {
+
+	const Allowance = discordgo.PermissionViewChannel | discordgo.PermissionSendMessages
+	everyone, _ := g.__findEveryone()
+
+	// make permission
+	permissions := []*discordgo.PermissionOverwrite{
+		{
+			ID:    everyone.ID,
+			Type:  discordgo.PermissionOverwriteTypeRole,
+			Deny:  discordgo.PermissionViewChannel,
+			Allow: 0,
+		},
+		{
+			ID:    g.__findMe().User.ID,
+			Type:  discordgo.PermissionOverwriteTypeMember,
+			Deny:  0,
+			Allow: Allowance,
+		},
+	}
+
+	for i := range allowMemberIds {
+		permissions = append(permissions, &discordgo.PermissionOverwrite{
+			ID:    allowMemberIds[i],
+			Type:  discordgo.PermissionOverwriteTypeMember,
+			Deny:  0,
+			Allow: Allowance,
+		})
+	}
 
 	// make text chat
 	if ch, err := session.GuildChannelCreateComplex(
 		g.guild.ID,
 		discordgo.GuildChannelCreateData{
-			Name:     name,
-			Type:     discordgo.ChannelTypeGuildText,
-			Topic:    topic,
-			ParentID: g.categoryID,
+			Name:                 name,
+			Type:                 discordgo.ChannelTypeGuildText,
+			Topic:                topic,
+			ParentID:             g.categoryID,
+			PermissionOverwrites: permissions,
 		}); err != nil {
 		return nil, errors.New("failed to make a discord text chat: " + err.Error())
 	} else {
@@ -75,14 +104,44 @@ func (g *Guild) MakeTextChat(name, topic string) (vc bot.TextConn, err error) {
 	}
 }
 
-func (g *Guild) MakeVoiceChat(name string) (vc bot.VoiceConn, err error) {
+func (g *Guild) MakePrivateVoiceChat(name string, allowMemberIds []string) (vc bot.VoiceConn, err error) {
+
+	const Allowance = discordgo.PermissionViewChannel | discordgo.PermissionVoiceConnect | discordgo.PermissionVoiceSpeak
+	everyone, _ := g.__findEveryone()
+
+	// make permission
+	permissions := []*discordgo.PermissionOverwrite{
+		{
+			ID:    everyone.ID,
+			Type:  discordgo.PermissionOverwriteTypeRole,
+			Deny:  discordgo.PermissionViewChannel,
+			Allow: 0,
+		},
+		{
+			ID:    g.__findMe().User.ID,
+			Type:  discordgo.PermissionOverwriteTypeMember,
+			Deny:  0,
+			Allow: Allowance,
+		},
+	}
+
+	for i := range allowMemberIds {
+		permissions = append(permissions, &discordgo.PermissionOverwrite{
+			ID:    allowMemberIds[i],
+			Type:  discordgo.PermissionOverwriteTypeMember,
+			Deny:  0,
+			Allow: Allowance,
+		})
+	}
+
 	// make voice chat
 	if ch, err := session.GuildChannelCreateComplex(
 		g.guild.ID,
 		discordgo.GuildChannelCreateData{
-			Name:     name,
-			Type:     discordgo.ChannelTypeGuildVoice,
-			ParentID: g.categoryID,
+			Name:                 name,
+			Type:                 discordgo.ChannelTypeGuildVoice,
+			ParentID:             g.categoryID,
+			PermissionOverwrites: permissions,
 		}); err != nil {
 		return nil, errors.New("failed to make a discord voice chat: " + err.Error())
 	} else {

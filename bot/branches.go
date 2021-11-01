@@ -8,8 +8,8 @@ import (
 
 type (
 	GroupConn interface {
-		MakeTextChat(name, topic string) (TextConn, error)
-		MakeVoiceChat(name string) (VoiceConn, error)
+		MakePrivateTextChat(name, topic string, allowMemberIds []string) (TextConn, error)
+		MakePrivateVoiceChat(name string, allowMemberIds []string) (VoiceConn, error)
 		MemberMute(memberId string, mute bool)
 	}
 
@@ -39,35 +39,37 @@ func SpreadBranches(conn GroupConn, args *EventArgs) (branches Branches, err err
 
 	// shuffle
 	rand.Shuffle(len(memberIds), func(i, j int) { memberIds[i], memberIds[j] = memberIds[j], memberIds[i] })
+	allowMemberIds := [][]string{}
 
-	// make branches
+	// make branches instance
 	branches = make(Branches, (len(memberIds)-1)/MaxBranchMembers+1)
+
+	for range branches {
+		allowMemberIds = append(allowMemberIds, []string{})
+	}
+
+	for i := range memberIds {
+		allowMemberIds[i%len(branches)] = append(allowMemberIds[i%len(branches)], memberIds[i])
+	}
+
 	for i := range branches {
 		name := "やすみ_" + strconv.Itoa(i+1)
 
 		// make branch
-		if text, err := conn.MakeTextChat(name, BranchTopic); err != nil {
+		if text, err := conn.MakePrivateTextChat(name, BranchTopic, allowMemberIds[i]); err != nil {
 			return nil, errors.New("cannot make text chat: " + err.Error())
-		} else if voice, err := conn.MakeVoiceChat(name); err != nil {
+		} else if voice, err := conn.MakePrivateVoiceChat(name, allowMemberIds[i]); err != nil {
 			return nil, errors.New("cannot make voice chat: " + err.Error())
 		} else {
 			branches[i].TextConn, branches[i].VoiceConn = text, voice
-		}
-
-		// make private
-		if err := branches[i].MakePrivate(); err != nil {
-			return nil, errors.New("cannot make chat private: " + err.Error())
 		}
 	}
 
 	// move member to branch chats
 	for i := range memberIds {
-		if err := branches[i%len(branches)].MakeAllowance(memberIds[i]); err != nil {
-			return nil, err
-		} else if err := branches[i%len(branches)].MoveToHere(memberIds[i]); err != nil {
+		if err := branches[i%len(branches)].MoveToHere(memberIds[i]); err != nil {
 			return nil, errors.New("cannot move member to voice chat: " + err.Error())
 		}
-		conn.MemberMute(memberIds[i], false)
 	}
 
 	return branches, nil
