@@ -35,15 +35,27 @@ var (
 	JST            = 9 * time.Hour
 )
 
-const (
-	MokuMokuExplain = "```\n" +
-		"このもくもく会はボットが管理します。\n" +
-		"はじめの52分がもくもく時間でミュートとなり、つぎの17分が休憩時間で3-5人のルームに振り分けられる、というルーチンで進められます。\n" +
-		"ボイスチャットの移動を含め、すべてボットが管理するので安心して作業（52分）と休憩（17分）のルーチンをお楽しみください！！\n" +
-		"```"
-	MokuMokuBegining = "もくもく会さぎょう部はじめます！！予定時間は15時04分頃までです！！頑張ってください！！"
-	BreakingBegining = "もくもく会やすみ時間はじまります！！予定時間は15時04分頃までです！！しっかりやすんで次のもくもくに備えましょう！！"
-	MokuMokuEnded    = "さぎょうお疲れさまでした！！また是非いらしてください！！"
+var (
+	MsgBeginEvent = bot.MsgArgs{
+		Title: "🔥 もくもく会をはじめます！",
+		Description: "作業と休憩のルーチンを機械的に管理することでより効率的な作業の支援を行います。\n" +
+			"作業中はボットが全員のマイクミュートを行うので静かに作業し、休憩中は3-5人のルームに振り分けて和気あいあいとお話しいただければと思います。",
+	}
+	MsgBeginMokuMoku = bot.MsgArgs{
+		Title: "🚀 作業時間が始まります！",
+		Description: "作業は52分間です。ボットが参加者のマイクミュートをします。\n" +
+			"途中参加もできるのでぜひ来てください。",
+	}
+	MsgBeginBreaking = bot.MsgArgs{
+		Title: "❤️ 休憩時間が始まります！",
+		Description: "休憩は17分間です。ボットがメンバーの振り分けを行います。\n" +
+			"休憩はプライベートチャットで行うので途中参加の方は次の作業時間が始まるまでそのままお待ちください。",
+	}
+	MsgEndEvent = bot.MsgArgs{
+		Title: "😴 作業お疲れさまでした！",
+		Description: "もくもく会は24時間行うことができます。\n" +
+			"ボットは24時間監視しているのでぜひボイスチャットに入ってもくもく会を始めてください。",
+	}
 )
 
 func init() {
@@ -96,11 +108,11 @@ func (e *Event) onClose() {
 }
 
 func (e *Event) routine() {
-	e.EventArgs.Random.Println(MokuMokuExplain)
+	e.EventArgs.Random.Println(&MsgBeginEvent)
 	for !e.routineOnce() {
 	}
 	e.onClose()
-	e.EventArgs.Random.Println(MokuMokuEnded)
+	e.EventArgs.Random.Println(&MsgEndEvent)
 	fmt.Println("mokumoku event closed")
 }
 
@@ -110,7 +122,9 @@ func (e *Event) routineOnce() (isClosed bool) {
 
 	// mokumoku
 	fmt.Println("Begin mokumoku time")
-	whole.Random.Println(time.Now().Add(JST + MokuMokuMinute).Format(MokuMokuBegining))
+	msg := MsgBeginMokuMoku
+	msg.Footer = time.Now().Add(JST + MokuMokuMinute).Format("休憩時間は15:04頃からです！")
+	whole.Random.Println(&msg)
 	timer := time.NewTimer(MokuMokuMinute)
 
 	for i, members := 0, whole.MokuMoku.JoinMemberIds(); i < len(members); i++ {
@@ -153,7 +167,9 @@ func (e *Event) routineOnce() (isClosed bool) {
 
 	// breaking
 	fmt.Println("Begin breaking time")
-	whole.Random.Println(time.Now().Add(JST + BreakingMinute).Format(BreakingBegining))
+	msg = MsgBeginBreaking
+	msg.Footer = time.Now().Add(JST + BreakingMinute).Format("作業時間は15:04頃からです！")
+	whole.Random.Println(&msg)
 	timer = time.NewTimer(BreakingMinute)
 
 	branches, err := bot.SpreadBranches(e.GroupConn, whole)

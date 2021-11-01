@@ -1,6 +1,7 @@
 package discord
 
 import (
+	"app/bot"
 	"errors"
 	"fmt"
 
@@ -57,8 +58,15 @@ func (tc *TextChannel) AllowAccess(memberId string) error {
 	)
 }
 
-func (tc *TextChannel) Println(msg string) {
-	session.ChannelMessageSend(tc.ID, msg)
+func (tc *TextChannel) Println(msgArgs *bot.MsgArgs) {
+	session.ChannelMessageSendEmbed(tc.ID, &discordgo.MessageEmbed{
+		Type:        discordgo.EmbedTypeArticle,
+		Title:       msgArgs.Title,
+		Description: msgArgs.Description,
+		Footer: &discordgo.MessageEmbedFooter{
+			Text: msgArgs.Footer,
+		},
+	})
 }
 
 func (vc *VoiceChannel) GetID() string      { return vc.ID }

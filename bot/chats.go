@@ -20,7 +20,7 @@ type (
 
 	TextConn interface {
 		ChatConn
-		Println(msg string)
+		Println(msgArgs *MsgArgs)
 	}
 
 	VoiceConn interface {
@@ -29,5 +29,9 @@ type (
 		MoveToHere(memberId string) error
 		JoinMemberIds() []string
 		GetNumJoining() int
+	}
+
+	MsgArgs struct {
+		Title, Description, Footer string
 	}
 )
