@@ -63,12 +63,11 @@ func SpreadBranches(conn GroupConn, args *EventArgs) (branches Branches, err err
 		} else {
 			branches[i].TextConn, branches[i].VoiceConn = text, voice
 		}
-	}
-
-	// move member to branch chats
-	for i := range memberIds {
-		if err := branches[i%len(branches)].MoveToHere(memberIds[i]); err != nil {
-			return nil, errors.New("cannot move member to voice chat: " + err.Error())
+		// move member to branch chats
+		for j := range allowMemberIds[i] {
+			if err := branches[j%len(branches)].MoveToHere(allowMemberIds[i][j]); err != nil {
+				return nil, errors.New("cannot move member to voice chat: " + err.Error())
+			}
 		}
 	}
 
