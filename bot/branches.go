@@ -7,18 +7,12 @@ import (
 )
 
 type (
-	GroupConn interface {
-		MakePrivateTextChat(name, topic string, allowMemberIds []string) (TextConn, error)
-		MakePrivateVoiceChat(name string, allowMemberIds []string) (VoiceConn, error)
-		MemberMute(memberId string, mute bool)
-	}
-
-	Branches []Branch
-
 	Branch struct {
 		TextConn
 		VoiceConn
 	}
+
+	Branches []Branch
 )
 
 const MaxBranchMembers = 5
