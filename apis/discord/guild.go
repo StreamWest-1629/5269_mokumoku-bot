@@ -145,7 +145,10 @@ func (g *Guild) MakePrivateVoiceChat(name string, allowMemberIds []string) (vc b
 		}); err != nil {
 		return nil, errors.New("failed to make a discord voice chat: " + err.Error())
 	} else {
-		return (*VoiceChannel)(ch), nil
+		return &VoiceChannel{
+			Chat:       (*Chat)(ch),
+			connection: nil,
+		}, nil
 	}
 }
 
@@ -206,7 +209,10 @@ func (g *Guild) __makeChannels() (*bot.EventArgs, error) {
 			case discordgo.ChannelTypeGuildVoice:
 				switch ch.Name {
 				case MokuMokuName:
-					MokuMoku = (*VoiceChannel)(ch)
+					MokuMoku = &VoiceChannel{
+						Chat:       (*Chat)(ch),
+						connection: nil,
+					}
 				}
 			case discordgo.ChannelTypeGuildText:
 				switch ch.Name {
@@ -245,7 +251,10 @@ func (g *Guild) __makeChannels() (*bot.EventArgs, error) {
 		}); err != nil {
 			return nil, err
 		} else {
-			MokuMoku = (*VoiceChannel)(ch)
+			MokuMoku = &VoiceChannel{
+				Chat:       (*Chat)(ch),
+				connection: nil,
+			}
 		}
 	}
 

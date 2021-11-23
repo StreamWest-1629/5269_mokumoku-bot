@@ -98,10 +98,12 @@ func onVoiceStateUpdate(_ *discordgo.Session, updated *discordgo.VoiceStateUpdat
 			// event begin to run
 			ev.OnClose = func() {
 				session.ChannelVoiceJoin(guild.guild.ID, "", false, false)
+				ev.MokuMoku.(*VoiceChannel).connection = nil
 				delete(mokumokuRunning, guild.ID())
 			}
 
-			session.ChannelVoiceJoin(guild.guild.ID, args.MokuMoku.GetID(), false, false)
+			vc, _ := session.ChannelVoiceJoin(guild.guild.ID, args.MokuMoku.GetID(), false, false)
+			ev.MokuMoku.(*VoiceChannel).connection = vc
 			mokumokuRunning[guild.ID()] = ev
 
 		} else if updated.Mute {
