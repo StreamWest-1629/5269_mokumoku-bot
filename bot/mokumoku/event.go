@@ -60,7 +60,7 @@ var (
 )
 
 func init() {
-	if _, exist := os.LookupEnv("DEBUG"); exist {
+	if _, exist := os.LookupEnv("DEBUGMODE"); exist {
 		MokuMokuMinute /= 60
 		BreakingMinute /= 60
 	}

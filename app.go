@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	if _, exist := os.LookupEnv("DEBUG"); exist {
+	if _, exist := os.LookupEnv("DEBUGMODE"); exist {
 		fmt.Println("[DEBUG MODE!]")
 	}
 }

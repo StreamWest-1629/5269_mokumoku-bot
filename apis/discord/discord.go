@@ -26,7 +26,7 @@ func init() {
 
 	fmt.Print("discord initializing...")
 
-	if _, exist := os.LookupEnv("DEBUG"); exist {
+	if _, exist := os.LookupEnv("DEBUGMODE"); exist {
 		CategoryName += "-DEV"
 	}
 	// initialize session
