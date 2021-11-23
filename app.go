@@ -3,15 +3,19 @@ package main
 import (
 	"app/apis"
 	_ "app/apis/discord"
-	"fmt"
+
+	// _ "app/apis/twitter"
+	"log"
 	"os"
 
 	"app/apis/heroku"
 )
 
 func init() {
-	if _, exist := os.LookupEnv("DEBUG"); exist {
-		fmt.Println("[DEBUG MODE!]")
+	if _, exist := os.LookupEnv("DEBUGMODE"); exist {
+		log.Println("[DEBUG MODE!]")
+	} else {
+		log.Println("[RELEASE MODE!]")
 	}
 }
 

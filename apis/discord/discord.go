@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
@@ -25,9 +24,9 @@ var (
 
 func init() {
 
-	fmt.Print("discord initializing...")
+	log.Println("discord initializing...")
 
-	if _, exist := os.LookupEnv("DEBUG"); exist {
+	if _, exist := os.LookupEnv("DEBUGMODE"); exist {
 		CategoryName += "-DEV"
 	}
 	// initialize session
@@ -45,7 +44,6 @@ func init() {
 	session.Identify.Intents = discordgo.IntentsAll
 
 	// register event listener
-	session.AddHandler(onMessageCreate)
 	session.AddHandler(onVoiceStateUpdate)
 
 	// make state availabled
@@ -63,16 +61,7 @@ func init() {
 		session.Close()
 	})
 
-	fmt.Println("ended!")
-}
-
-func onMessageCreate(_ *discordgo.Session, created *discordgo.MessageCreate) {
-	if strings.HasPrefix(created.Content, "/mokumoku update") {
-		if _, running := mokumokuRunning[created.GuildID]; running {
-			guild, _ := SearchGuild(created.GuildID)
-			guild.GetWholeChats()
-		}
-	}
+	log.Println("discord initializing ended!")
 }
 
 func onVoiceStateUpdate(_ *discordgo.Session, updated *discordgo.VoiceStateUpdate) {
@@ -92,6 +81,7 @@ func onVoiceStateUpdate(_ *discordgo.Session, updated *discordgo.VoiceStateUpdat
 		}
 
 	} else if guild, exist := SearchGuild(updated.GuildID); exist {
+		log.Println("firstly: ", *updated.VoiceState)
 		defer lock.Unlock()
 		args := guild.GetWholeChats()
 		if ev := mokumoku.LaunchEvent(guild, args); ev != nil {
@@ -103,13 +93,7 @@ func onVoiceStateUpdate(_ *discordgo.Session, updated *discordgo.VoiceStateUpdat
 				delete(mokumokuRunning, guild.ID())
 			}
 
-			if vc, err := session.ChannelVoiceJoin(guild.guild.ID, args.MokuMoku.GetID(), false, false); err != nil {
-				log.Println("cannot join voice chat: " + err.Error())
-			} else {
-				log.Println("joined voice chat")
-				ev.MokuMoku.(*VoiceChannel).connection = vc
-				mokumokuRunning[guild.ID()] = ev
-			}
+			mokumokuRunning[updated.GuildID] = ev
 
 		} else if updated.Mute {
 

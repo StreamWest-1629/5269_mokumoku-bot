@@ -4,6 +4,7 @@ import (
 	"app/bot"
 	"app/bot/cheerleading"
 	"fmt"
+	"log"
 	"os"
 	"time"
 )
@@ -61,13 +62,16 @@ var (
 )
 
 func init() {
-	if _, exist := os.LookupEnv("DEBUG"); exist {
+	if _, exist := os.LookupEnv("DEBUGMODE"); exist {
+		log.Println("shortspan: minutes to seconds")
 		MokuMokuMinute /= 60
 		BreakingMinute /= 60
 	}
 }
 
 func LaunchEvent(conn bot.GroupConn, whole *bot.EventArgs) *Event {
+
+	log.Println("Check this is event or not")
 
 	if len(whole.MokuMoku.JoinMemberIds()) > 0 {
 

@@ -209,9 +209,10 @@ func (g *Guild) __makeChannels() (*bot.EventArgs, error) {
 			case discordgo.ChannelTypeGuildVoice:
 				switch ch.Name {
 				case MokuMokuName:
+					vc, _ := session.ChannelVoiceJoin(ch.GuildID, ch.ID, false, true)
 					MokuMoku = &VoiceChannel{
 						Chat:       (*Chat)(ch),
-						connection: nil,
+						connection: vc,
 					}
 				}
 			case discordgo.ChannelTypeGuildText:
@@ -251,9 +252,10 @@ func (g *Guild) __makeChannels() (*bot.EventArgs, error) {
 		}); err != nil {
 			return nil, err
 		} else {
+			vc, _ := session.ChannelVoiceJoin(ch.GuildID, ch.ID, false, true)
 			MokuMoku = &VoiceChannel{
 				Chat:       (*Chat)(ch),
-				connection: nil,
+				connection: vc,
 			}
 		}
 	}

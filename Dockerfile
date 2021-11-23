@@ -1,12 +1,19 @@
-FROM golang:1.17-buster
+FROM golang:1.16
 
 WORKDIR /app
 
 # COPY ./go.mod .
 # COPY ./go.sum .
-COPY . .
+RUN apt-get update
 
+# encoder
+RUN apt-get install -y ffmpeg
+RUN go install github.com/bwmarrin/dca/cmd/dca@latest
+# debugger
+RUN go install github.com/cosmtrek/air@v1.27.3
+
+COPY . .
 RUN go mod tidy
 
-RUN go install github.com/cosmtrek/air@v1.27.3
+
 CMD [ "air" ]

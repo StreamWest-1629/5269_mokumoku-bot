@@ -5,7 +5,9 @@
         },
         "icon-from": "twitter",
         "name-from": "twitter",
-        "link": "https://twitter.com/streamwest1629"
+        "urls": [
+            "https://twitter.com/streamwest1629"
+        ]
     },
     "voices": [
         [
