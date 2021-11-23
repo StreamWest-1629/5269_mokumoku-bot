@@ -41,7 +41,7 @@ func init() {
 					log.Fatalln("cannot open voicebank file (path: " + relPath + "): " + err.Error())
 				} else {
 					for i := range voicebank.Talkset {
-						for j, _ := range voicebank.Talkset[i] {
+						for j := range voicebank.Talkset[i] {
 							voicebank.Talkset[i][j].FileName = rootFileDir + filepath.Dir(relPath) + "/" + voicebank.Talkset[i][j].FileName
 						}
 					}

@@ -1,6 +1,7 @@
 package twitter
 
 import (
+	"app/bot/cheerleading"
 	"fmt"
 	"log"
 	"os"
@@ -44,6 +45,9 @@ func init() {
 			Connection = Connect{
 				client: client,
 			}
+
+			cheerleading.Connections["twitter"] = &Connection
+
 		}
 	}
 }
