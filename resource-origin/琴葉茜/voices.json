@@ -1,0 +1,68 @@
+{
+    "profile": {
+        "connections": {
+            "twitter": "streamwest1629"
+        },
+        "icon-from": "twitter",
+        "name-from": "twitter",
+        "urls": [
+            "https://twitter.com/streamwest1629"
+        ]
+    },
+    "voices": [
+        [
+            {
+                "file": "01_akane-0",
+                "text": "来てくれてありがとな"
+            }
+        ],
+        [
+            {
+                "file": "02_akane-0",
+                "text": "ほな作業はじめるんやで"
+            }
+        ],
+        [
+            {
+                "file": "03_akane-0",
+                "text": "残り半分だから頑張るんや"
+            }
+        ],
+        [
+            {
+                "file": "04_akane-0",
+                "text": "あとちょっとやからな"
+            }
+        ],
+        [
+            {
+                "file": "05_akane-0",
+                "text": "作業は一旦おわりや、しっかり休むんやで"
+            }
+        ],
+        [
+            {
+                "file": "06_akane-0",
+                "text": "来たなぁ，作業はじめるんや"
+            }
+        ],
+        [
+            {
+                "file": "07_akane-0",
+                "text": "みんな休憩中やから、しばらくそのまま待っとってな"
+            }
+        ],
+        [
+            {
+                "file": "99_akane-0",
+                "text": "次の休憩までにおわらせるんや"
+            }
+        ],
+        [
+            {
+                "file": "98_akane-0",
+                "text": "茜ちゃんの事も応援してくれな"
+            }
+        ]
+    ]
+}
