@@ -2,6 +2,7 @@ package mokumoku
 
 import (
 	"app/bot"
+	"app/bot/cheerleading"
 	"fmt"
 	"os"
 	"time"
@@ -134,8 +135,17 @@ func (e *Event) routineOnce() (isClosed bool) {
 		}
 	}
 
+	talk := time.NewTimer(10 * time.Second)
+
 	for isContinue := true; isContinue; {
 		select {
+		case <-talk.C:
+			cheerleader := cheerleading.RandomCheerleader()
+			cheerleader, path := cheerleader.RandomTalkPath(cheerleading.MokuMokuLaunch)
+			// icon, name := cheerleader.Profile.IconURL(true), cheerleader.Profile.Name(true)
+
+			whole.MokuMoku.PlaySound(path.FileName)
+
 		case <-timer.C:
 			isContinue = false
 		case event := <-e.eventListener:

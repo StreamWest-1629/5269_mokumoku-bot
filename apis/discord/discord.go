@@ -4,6 +4,7 @@ import (
 	"app/apis"
 	"app/bot/mokumoku"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"sync"
@@ -102,9 +103,13 @@ func onVoiceStateUpdate(_ *discordgo.Session, updated *discordgo.VoiceStateUpdat
 				delete(mokumokuRunning, guild.ID())
 			}
 
-			vc, _ := session.ChannelVoiceJoin(guild.guild.ID, args.MokuMoku.GetID(), false, false)
-			ev.MokuMoku.(*VoiceChannel).connection = vc
-			mokumokuRunning[guild.ID()] = ev
+			if vc, err := session.ChannelVoiceJoin(guild.guild.ID, args.MokuMoku.GetID(), false, false); err != nil {
+				log.Println("cannot join voice chat: " + err.Error())
+			} else {
+				log.Println("joined voice chat")
+				ev.MokuMoku.(*VoiceChannel).connection = vc
+				mokumokuRunning[guild.ID()] = ev
+			}
 
 		} else if updated.Mute {
 

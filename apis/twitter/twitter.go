@@ -23,6 +23,8 @@ const (
 
 func init() {
 
+	fmt.Print("twitter initializing...")
+
 	// launch twitter client
 	if key, exist := os.LookupEnv(keyKey); !exist {
 		fmt.Println("cannot found key in environment values")
@@ -50,4 +52,6 @@ func init() {
 
 		}
 	}
+
+	fmt.Println("ended!")
 }

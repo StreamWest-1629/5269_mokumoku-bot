@@ -16,6 +16,8 @@ func init() {
 
 	rootDecoded := []string{}
 
+	log.Println("load voicebank files...")
+
 	// parse json file
 	if f, err := os.Open(rootFileDir + rootFileName); err != nil {
 		log.Fatalln("cannot open route file: " + err.Error())
@@ -50,4 +52,6 @@ func init() {
 			}
 		}()
 	}
+
+	log.Println("load voicebank files ended")
 }
