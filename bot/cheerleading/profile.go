@@ -6,6 +6,7 @@ type (
 		IconFrom          string            `json:"icon-from"`
 		NameFrom          string            `json:"name-from"`
 		URLs              []string          `json:"urls"`
+		iconURL, name     *string
 	}
 
 	Talkset [9][]Talk
