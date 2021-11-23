@@ -35,11 +35,11 @@ func init() {
 			} else {
 
 				defer f.Close()
-				voicebank := VoiceBank{}
+				voicebank := Cheerleader{}
 				if err := json.NewDecoder(f).Decode(&voicebank); err != nil {
 					log.Fatalln("cannot open voicebank file (path: " + relPath + "): " + err.Error())
 				} else {
-					Voicebanks = append(Voicebanks, voicebank)
+					Cheerleaders = append(Cheerleaders, voicebank)
 				}
 			}
 		}()

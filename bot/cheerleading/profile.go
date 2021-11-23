@@ -11,20 +11,20 @@ type (
 	Talkset [9][]Talk
 
 	Talk struct {
-		FileName string `json:"filename"`
+		FileName string `json:"file"`
 		Text     string `json:"text"`
 	}
 
 	TalkCommand int
 
-	VoiceBank struct {
+	Cheerleader struct {
 		Profile Profile `json:"profile"`
 		Talkset Talkset `json:"voices"`
 	}
 )
 
 var (
-	Voicebanks []VoiceBank
+	Cheerleaders []Cheerleader
 )
 
 const (
