@@ -27,5 +27,6 @@ type (
 		MoveToHere(memberId string) error
 		JoinMemberIds() []string
 		GetNumJoining() int
+		PlaySound(pathWithoutExt string) error
 	}
 )

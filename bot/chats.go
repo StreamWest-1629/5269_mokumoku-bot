@@ -12,6 +12,6 @@ type (
 	}
 
 	MsgArgs struct {
-		Title, Description, Footer string
+		Title, Description, Footer, URL, IconURL string
 	}
 )
