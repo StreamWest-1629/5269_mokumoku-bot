@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 const (
@@ -39,6 +40,11 @@ func init() {
 				if err := json.NewDecoder(f).Decode(&voicebank); err != nil {
 					log.Fatalln("cannot open voicebank file (path: " + relPath + "): " + err.Error())
 				} else {
+					for i := range voicebank.Talkset {
+						for j, _ := range voicebank.Talkset[i] {
+							voicebank.Talkset[i][j].FileName = rootFileDir + filepath.Dir(relPath) + "/" + voicebank.Talkset[i][j].FileName
+						}
+					}
 					Cheerleaders = append(Cheerleaders, voicebank)
 				}
 			}
