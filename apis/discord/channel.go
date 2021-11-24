@@ -2,8 +2,10 @@ package discord
 
 import (
 	"app/bot"
+	"encoding/binary"
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -11,7 +13,10 @@ import (
 type (
 	Chat         discordgo.Channel
 	TextChannel  Chat
-	VoiceChannel Chat
+	VoiceChannel struct {
+		*Chat
+		conn *discordgo.VoiceConnection
+	}
 )
 
 func (ch *Chat) MakePrivate() error {
@@ -70,8 +75,8 @@ func (tc *TextChannel) Println(msgArgs *bot.MsgArgs) {
 }
 
 func (vc *VoiceChannel) GetID() string      { return vc.ID }
-func (vc *VoiceChannel) MakePrivate() error { return (*Chat)(vc).MakePrivate() }
-func (vc *VoiceChannel) Delete()            { (*Chat)(vc).Delete() }
+func (vc *VoiceChannel) MakePrivate() error { return vc.Chat.MakePrivate() }
+func (vc *VoiceChannel) Delete()            { vc.Chat.Delete() }
 func (vc *VoiceChannel) AllowAccess(memberId string) error {
 	return session.ChannelPermissionSet(
 		vc.ID,
@@ -84,7 +89,7 @@ func (vc *VoiceChannel) AllowAccess(memberId string) error {
 
 func (vc *VoiceChannel) MakeEveryoneMute(mute bool) error {
 	if mute {
-		if everyone, err := (*Chat)(vc).__FindEveryone(); err != nil {
+		if everyone, err := vc.Chat.__FindEveryone(); err != nil {
 			return err
 		} else if err := session.ChannelPermissionSet(
 			vc.ID,
@@ -98,7 +103,7 @@ func (vc *VoiceChannel) MakeEveryoneMute(mute bool) error {
 			return nil
 		}
 	} else {
-		if everyone, err := (*Chat)(vc).__FindEveryone(); err != nil {
+		if everyone, err := vc.Chat.__FindEveryone(); err != nil {
 			return err
 		} else if err := session.ChannelPermissionSet(
 			vc.ID,
@@ -157,6 +162,44 @@ func (vc *VoiceChannel) GetNumJoining() int {
 	}
 
 	return numMember
+}
+
+func (vc *VoiceChannel) Playsound(pathWithoutExt string) error {
+	if vc.conn == nil {
+		return errors.New("cannot play sound: connection is nil")
+	}
+
+	var buffer []byte
+	if err := func() error {
+		opuslen := int16(0)
+		file, err := os.Open(pathWithoutExt + ".dca")
+
+		if err != nil {
+			return errors.New("cannot open dca file: " + err.Error())
+		}
+
+		defer file.Close()
+
+		if err := binary.Read(file, binary.LittleEndian, &opuslen); err != nil {
+			return errors.New("cannot read dca file size: " + err.Error())
+		}
+
+		buffer = make([]byte, opuslen)
+
+		if err = binary.Read(file, binary.LittleEndian, &buffer); err != nil {
+			return errors.New("cannot read dca file: " + err.Error())
+		}
+
+		return nil
+	}(); err != nil {
+		return err
+	}
+
+	vc.conn.Speaking(true)
+	vc.conn.OpusSend <- buffer
+	vc.conn.Speaking(false)
+
+	return nil
 }
 
 func (ch *Chat) __FindEveryone() (g *discordgo.Role, err error) {
