@@ -3,6 +3,7 @@ package mokumoku
 import (
 	"app/bot"
 	"fmt"
+	"log"
 	"os"
 	"time"
 )
@@ -66,8 +67,11 @@ func init() {
 	}
 }
 
-func LaunchEvent(conn bot.GroupConn, whole *bot.EventArgs) *Event {
+func CheckLaunchEvent(whole *bot.EventArgs) bool {
+	return len(whole.MokuMoku.JoinMemberIds()) > 0
+}
 
+func LaunchEvent(conn bot.GroupConn, whole *bot.EventArgs) *Event {
 	if len(whole.MokuMoku.JoinMemberIds()) > 0 {
 
 		event := (&Event{
@@ -132,6 +136,12 @@ func (e *Event) routineOnce() (isClosed bool) {
 		if _, exist := whole.MuteIgnore[members[i]]; !exist {
 			e.MemberMute(members[i], true)
 		}
+	}
+
+	time.Sleep(500 * time.Millisecond)
+
+	if err := whole.MokuMoku.Playsound("./resource-origin/琴葉茜/01_akane-0.wav"); err != nil {
+		log.Println("cannot play sound: " + err.Error())
 	}
 
 	for isContinue := true; isContinue; {

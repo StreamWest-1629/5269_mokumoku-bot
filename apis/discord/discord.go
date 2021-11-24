@@ -93,21 +93,26 @@ func onVoiceStateUpdate(_ *discordgo.Session, updated *discordgo.VoiceStateUpdat
 	} else if guild, exist := SearchGuild(updated.GuildID); exist {
 		defer lock.Unlock()
 		args := guild.GetWholeChats()
-		if ev := mokumoku.LaunchEvent(guild, args); ev != nil {
 
-			// event begin to run
-			ev.OnClose = func() {
-				session.ChannelVoiceJoin(guild.guild.ID, "", false, false)
-				delete(mokumokuRunning, guild.ID())
-			}
+		if mokumoku.CheckLaunchEvent(args) {
 
 			// voice join
 			vc, _ := session.ChannelVoiceJoin(
-				ev.MokuMoku.(*VoiceChannel).GuildID,
-				ev.MokuMoku.(*VoiceChannel).ID, false, false)
-			ev.MokuMoku.(*VoiceChannel).conn = vc
+				args.MokuMoku.(*VoiceChannel).GuildID,
+				args.MokuMoku.(*VoiceChannel).ID, false, false)
+			args.MokuMoku.(*VoiceChannel).conn = vc
 
-			mokumokuRunning[guild.ID()] = ev
+			if ev := mokumoku.LaunchEvent(guild, args); ev != nil {
+				// event begin to run
+				ev.OnClose = func() {
+					session.ChannelVoiceJoin(guild.guild.ID, "", false, false)
+					delete(mokumokuRunning, guild.ID())
+				}
+				mokumokuRunning[guild.ID()] = ev
+
+			} else {
+				session.ChannelVoiceJoin(guild.guild.ID, "", false, false)
+			}
 
 		} else if updated.Mute {
 
