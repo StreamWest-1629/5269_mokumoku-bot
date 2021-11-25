@@ -19,11 +19,20 @@ func (e *Event) Breaking() bool {
 	}
 
 	timer := time.NewTimer(MokuMokuMinute)
+	endCall := time.NewTimer(MokuMokuMinute * 30 * time.Second)
+
+	i := 1
+	prev := time.Now().Add(-20 * time.Second)
 
 	for isContinue := true; isContinue; {
 		select {
 		case <-timer.C:
 			isContinue = false
+		case <-endCall.C:
+			for i := range branches {
+				branches[i].TextConn.Println(&MsgMostlyEndedBreaking)
+			}
+
 		case event := <-e.eventListener:
 			if func() bool {
 				defer event.Release()
@@ -33,6 +42,21 @@ func (e *Event) Breaking() bool {
 					return true
 				case *onCheckMute:
 					if _, exist := e.EventArgs.MuteIgnore[event.MemberId]; !exist {
+						if event.ToChatId == e.EventArgs.MokuMoku.GetID() {
+							l := len(e.EventArgs.MokuMoku.JoinMemberIds())
+							cur := time.Now()
+
+							if l > i && cur.Sub(prev) > 20*time.Second {
+								prev = cur
+								e.Talk(
+									cheerleading.JoiningDuringBreaking,
+									"作業していた方は今休憩しています。しばらくお待ちください。",
+									footer, false)
+							}
+
+							i = l
+						}
+
 						event.result <- event.ToChatId == e.EventArgs.MokuMoku.GetID()
 					} else {
 						event.result <- false

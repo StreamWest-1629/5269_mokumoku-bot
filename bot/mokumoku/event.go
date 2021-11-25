@@ -59,6 +59,9 @@ var (
 			"ボットが24時間監視しているので、もくもく会は24時間行うことができます。\n" +
 			"作業お疲れさまでした！",
 	}
+	MsgMostlyEndedBreaking = bot.MsgArgs{
+		Title: "休憩時間終了30秒前です",
+	}
 )
 
 func init() {

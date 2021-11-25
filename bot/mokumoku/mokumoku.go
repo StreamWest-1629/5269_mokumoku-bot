@@ -14,6 +14,9 @@ func (e *Event) MokuMoku() bool {
 	endCall := time.NewTimer(MokuMokuMinute - 30*time.Second)
 	timer := time.NewTimer(MokuMokuMinute)
 
+	i := len(e.EventArgs.MokuMoku.JoinMemberIds())
+	prev := time.Now().Add(-20 * time.Second)
+
 	for isContinue := true; isContinue; {
 		select {
 		case <-timer.C:
@@ -31,6 +34,21 @@ func (e *Event) MokuMoku() bool {
 					return true
 				case *onCheckMute:
 					if _, exist := e.EventArgs.MuteIgnore[event.MemberId]; !exist {
+						if event.ToChatId == e.EventArgs.MokuMoku.GetID() {
+							l := len(e.EventArgs.MokuMoku.JoinMemberIds())
+							cur := time.Now()
+
+							if l > i && cur.Sub(prev) > 20*time.Second {
+								prev = cur
+								e.Talk(
+									cheerleading.JoiningDuringMokuMoku,
+									"作業していた方は今休憩しています。しばらくお待ちください。",
+									footer, false)
+							}
+
+							i = l
+						}
+
 						event.result <- event.ToChatId == e.EventArgs.MokuMoku.GetID()
 
 						// check continue event
