@@ -115,7 +115,6 @@ func onVoiceStateUpdate(_ *discordgo.Session, updated *discordgo.VoiceStateUpdat
 			}
 
 		} else if updated.Mute {
-			defer lock.Unlock()
 			// bitween test and debug environment
 			if ch, err := session.Channel(updated.ChannelID); err == nil && ch.Name != MokuMokuName {
 				// release mute
