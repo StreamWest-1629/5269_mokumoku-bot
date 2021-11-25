@@ -42,7 +42,7 @@ func (e *Event) MokuMoku() bool {
 								prev = cur
 								e.Talk(
 									cheerleading.JoiningDuringMokuMoku,
-									"作業していた方は今休憩しています。しばらくお待ちください。",
+									"今は作業時間です。張り切って作業をしましょう。",
 									footer, false)
 							}
 

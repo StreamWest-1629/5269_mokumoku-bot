@@ -18,8 +18,8 @@ func (e *Event) Breaking() bool {
 		return true
 	}
 
-	timer := time.NewTimer(MokuMokuMinute)
-	endCall := time.NewTimer(MokuMokuMinute * 30 * time.Second)
+	timer := time.NewTimer(BreakingMinute)
+	endCall := time.NewTimer(BreakingMinute * 30 * time.Second)
 
 	i := 1
 	prev := time.Now().Add(-20 * time.Second)
