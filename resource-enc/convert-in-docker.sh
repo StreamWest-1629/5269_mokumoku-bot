@@ -33,8 +33,8 @@ for origin_file in $files; do
     "mp3"|"wav"|"org"|"flac" )
         echo "converting to 'dca' file..."
         result_file_dca="${result_file_noext}.dca"
-        ffmpeg -i "${origin_file}" -vn -ac 2 -ar 44100 -ab 256k -acodec libmp3lame -f mp3 "${result_file_noext}.mp3"
-        # ffmpeg -i "${origin_file}" -f s16le -ar 48000 -ac 2 pipe:1 | dca > "${result_file_dca}"
+        # ffmpeg -i "${origin_file}" -vn -ac 2 -ar 44100 -ab 256k -acodec libmp3lame -f mp3 "${result_file_noext}.mp3"
+        ffmpeg -i "${origin_file}" -f s16le -ar 48000 -ac 2 pipe:1 | dca > "${result_file_dca}"
         echo "converted: $result_file_dca ($result_file, $result_file_noext)"
         ;;
     esac
