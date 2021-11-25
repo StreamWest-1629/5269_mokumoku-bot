@@ -2,10 +2,12 @@ package discord
 
 import (
 	"app/bot"
+	"encoding/binary"
 	"errors"
 	"fmt"
+	"io"
+	"os"
 
-	"github.com/bwmarrin/dgvoice"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -173,7 +175,44 @@ func (vc *VoiceChannel) Playsound(path string) error {
 		return errors.New("cannot play sound: connection is nil")
 	}
 
-	dgvoice.PlayAudioFile(vc.conn, path+".mp3", make(chan bool, 1))
+	var buffer [][]byte
+	if err := func() error {
+		opuslen := int16(0)
+		file, err := os.Open(path + ".dca")
+
+		if err != nil {
+			return errors.New("cannot open dca file: " + err.Error())
+		}
+		defer file.Close()
+
+		for {
+			err := binary.Read(file, binary.LittleEndian, &opuslen)
+
+			if err == io.EOF || err == io.ErrUnexpectedEOF {
+				break
+			} else if err != nil {
+				return errors.New("cannot read dca file size: " + err.Error())
+			}
+
+			buff := make([]byte, opuslen)
+
+			if err = binary.Read(file, binary.LittleEndian, &buff); err != nil {
+				return errors.New("cannot read dca file: " + err.Error())
+			}
+
+			buffer = append(buffer, buff)
+
+		}
+		return nil
+	}(); err != nil {
+		return err
+	}
+
+	vc.conn.Speaking(true)
+	for _, buff := range buffer {
+		vc.conn.OpusSend <- buff
+	}
+	vc.conn.Speaking(false)
 
 	return nil
 }
