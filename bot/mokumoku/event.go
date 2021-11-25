@@ -114,10 +114,20 @@ func (e *Event) onClose() {
 }
 
 func (e *Event) routine() {
-	e.EventArgs.Random.Println(&MsgBeginEvent)
 
-	for e.cheerleader = cheerleading.RandomCheerleader(); !e.routineOnce(); e.cheerleader = cheerleading.RandomCheerleader() {
+	for i, members := 0, e.EventArgs.MokuMoku.JoinMemberIds(); i < len(members); i++ {
+		if _, exist := e.EventArgs.MuteIgnore[members[i]]; !exist {
+			e.MemberMute(members[i], true)
+		}
 	}
+
+	e.cheerleader = cheerleading.RandomCheerleader()
+	e.Talk(cheerleading.MokuMokuLaunch, MsgBeginEvent.Description, "", true)
+
+	for !e.routineOnce() {
+		e.cheerleader = cheerleading.RandomCheerleader()
+	}
+
 	e.onClose()
 	e.EventArgs.Random.Println(&MsgEndEvent)
 	fmt.Println("mokumoku event closed")
@@ -127,46 +137,14 @@ func (e *Event) routineOnce() (isClosed bool) {
 
 	whole := e.EventArgs
 
-	// mokumoku
-	fmt.Println("Begin mokumoku time")
-	msg := MsgBeginMokuMoku
-	msg.Footer = time.Now().Add(JST + MokuMokuMinute).Format("休憩時間は15:04頃からです！")
-	e.Talk(cheerleading.MokuMokuBegin, msg.Description, msg.Footer, false)
-
-	timer := time.NewTimer(MokuMokuMinute)
-
-	for i, members := 0, whole.MokuMoku.JoinMemberIds(); i < len(members); i++ {
-		if _, exist := whole.MuteIgnore[members[i]]; !exist {
+	for i, members := 0, e.EventArgs.MokuMoku.JoinMemberIds(); i < len(members); i++ {
+		if _, exist := e.EventArgs.MuteIgnore[members[i]]; !exist {
 			e.MemberMute(members[i], true)
 		}
 	}
 
-	for isContinue := true; isContinue; {
-		select {
-		case <-timer.C:
-			isContinue = false
-		case event := <-e.eventListener:
-			if func() bool {
-				defer event.Release()
-
-				switch event := event.(type) {
-				case onClose:
-					return true
-				case *onCheckMute:
-					if _, exist := whole.MuteIgnore[event.MemberId]; !exist {
-						event.result <- event.ToChatId == whole.MokuMoku.GetID()
-
-						// check continue event
-						return whole.MokuMoku.GetNumJoining() < whole.MinContinueMembers
-					} else {
-						event.result <- false
-					}
-				}
-				return false
-			}() {
-				return true
-			}
-		}
+	if e.MokuMoku() {
+		return true
 	}
 
 	if len(whole.MokuMoku.JoinMemberIds()) < whole.MinContinueMembers {
@@ -174,45 +152,7 @@ func (e *Event) routineOnce() (isClosed bool) {
 	}
 
 	// breaking
-	fmt.Println("Begin breaking time")
-	msg = MsgBeginBreaking
-	msg.Footer = time.Now().Add(JST + BreakingMinute).Format("作業時間は15:04頃からです！")
-	whole.Random.Println(&msg)
-	timer = time.NewTimer(BreakingMinute)
-
-	branches, err := bot.SpreadBranches(e.GroupConn, whole)
-	if err != nil {
-		fmt.Println(err.Error())
-		return true
-	}
-
-	for isContinue := true; isContinue; {
-		select {
-		case <-timer.C:
-			isContinue = false
-		case event := <-e.eventListener:
-			if func() bool {
-				defer event.Release()
-
-				switch event := event.(type) {
-				case onClose:
-					return true
-				case *onCheckMute:
-					if _, exist := whole.MuteIgnore[event.MemberId]; !exist {
-						event.result <- event.ToChatId == whole.MokuMoku.GetID()
-					} else {
-						event.result <- false
-					}
-				}
-				return false
-			}() {
-				return true
-			}
-		}
-	}
-
-	if err := branches.ClearBranches(e.GroupConn, whole); err != nil {
-		fmt.Println(err.Error())
+	if e.Breaking() {
 		return true
 	}
 
