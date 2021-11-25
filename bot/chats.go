@@ -29,9 +29,10 @@ type (
 		MoveToHere(memberId string) error
 		JoinMemberIds() []string
 		GetNumJoining() int
+		Playsound(pathwithoutExt string) error
 	}
 
 	MsgArgs struct {
-		Title, Description, Footer string
+		Title, Description, Footer, URL, IconURL, Authorname string
 	}
 )

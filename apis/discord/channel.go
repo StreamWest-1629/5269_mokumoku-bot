@@ -70,6 +70,11 @@ func (tc *TextChannel) Println(msgArgs *bot.MsgArgs) {
 		Footer: &discordgo.MessageEmbedFooter{
 			Text: msgArgs.Footer,
 		},
+		Author: &discordgo.MessageEmbedAuthor{
+			URL:     msgArgs.URL,
+			IconURL: msgArgs.IconURL,
+			Name:    msgArgs.Authorname,
+		},
 	})
 }
 
@@ -168,7 +173,7 @@ func (vc *VoiceChannel) Playsound(path string) error {
 		return errors.New("cannot play sound: connection is nil")
 	}
 
-	dgvoice.PlayAudioFile(vc.conn, path, make(chan bool, 1))
+	dgvoice.PlayAudioFile(vc.conn, path+".mp3", make(chan bool, 1))
 
 	return nil
 }
