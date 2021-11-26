@@ -49,6 +49,8 @@ func (e *Event) MokuMoku() bool {
 							}
 
 							i = l
+						} else if event.FromChatId == e.EventArgs.MokuMoku.GetID() {
+							i = len(e.EventArgs.MokuMoku.JoinMemberIds())
 						}
 
 						// check continue event

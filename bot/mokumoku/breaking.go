@@ -57,6 +57,8 @@ func (e *Event) Breaking() bool {
 							}
 
 							i = l
+						} else if event.FromChatId == e.EventArgs.MokuMoku.GetID() {
+							i = len(e.EventArgs.MokuMoku.JoinMemberIds())
 						}
 
 					} else {
