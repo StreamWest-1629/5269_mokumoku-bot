@@ -21,7 +21,6 @@ func (e *Event) Breaking() bool {
 	timer := time.NewTimer(BreakingMinute)
 	endCall := time.NewTimer(BreakingMinute - (30 * time.Second))
 
-	i := 1
 	prev := time.Now().Add(-20 * time.Second)
 
 	for isContinue := true; isContinue; {
@@ -44,21 +43,12 @@ func (e *Event) Breaking() bool {
 					if _, exist := e.EventArgs.MuteIgnore[event.MemberId]; !exist {
 
 						event.result <- event.ToChatId == e.EventArgs.MokuMoku.GetID()
-						if event.ToChatId == e.EventArgs.MokuMoku.GetID() {
-							l := len(e.EventArgs.MokuMoku.JoinMemberIds())
-							cur := time.Now()
-
-							if l > i && cur.Sub(prev) > 20*time.Second {
-								prev = cur
-								e.Talk(
-									cheerleading.JoiningDuringBreaking,
-									"作業していた方は今休憩しています。しばらくお待ちください。",
-									footer, false)
-							}
-
-							i = l
-						} else if event.FromChatId == e.EventArgs.MokuMoku.GetID() {
-							i = len(e.EventArgs.MokuMoku.JoinMemberIds())
+						if cur := time.Now(); event.ToChatId == e.EventArgs.MokuMoku.GetID() && cur.Sub(prev) > 20*time.Second {
+							prev = cur
+							e.Talk(
+								cheerleading.JoiningDuringBreaking,
+								"作業していた方は今休憩しています。しばらくお待ちください。",
+								footer, false)
 						}
 
 					} else {
