@@ -19,7 +19,7 @@ func (e *Event) Breaking() bool {
 	}
 
 	timer := time.NewTimer(BreakingMinute)
-	endCall := time.NewTimer(BreakingMinute * 30 * time.Second)
+	endCall := time.NewTimer(BreakingMinute - (30 * time.Second))
 
 	i := 1
 	prev := time.Now().Add(-20 * time.Second)
@@ -42,6 +42,8 @@ func (e *Event) Breaking() bool {
 					return true
 				case *onCheckMute:
 					if _, exist := e.EventArgs.MuteIgnore[event.MemberId]; !exist {
+
+						event.result <- event.ToChatId == e.EventArgs.MokuMoku.GetID()
 						if event.ToChatId == e.EventArgs.MokuMoku.GetID() {
 							l := len(e.EventArgs.MokuMoku.JoinMemberIds())
 							cur := time.Now()
@@ -57,7 +59,6 @@ func (e *Event) Breaking() bool {
 							i = l
 						}
 
-						event.result <- event.ToChatId == e.EventArgs.MokuMoku.GetID()
 					} else {
 						event.result <- false
 					}

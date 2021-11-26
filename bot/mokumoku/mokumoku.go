@@ -34,6 +34,8 @@ func (e *Event) MokuMoku() bool {
 					return true
 				case *onCheckMute:
 					if _, exist := e.EventArgs.MuteIgnore[event.MemberId]; !exist {
+
+						event.result <- event.ToChatId == e.EventArgs.MokuMoku.GetID()
 						if event.ToChatId == e.EventArgs.MokuMoku.GetID() {
 							l := len(e.EventArgs.MokuMoku.JoinMemberIds())
 							cur := time.Now()
@@ -48,8 +50,6 @@ func (e *Event) MokuMoku() bool {
 
 							i = l
 						}
-
-						event.result <- event.ToChatId == e.EventArgs.MokuMoku.GetID()
 
 						// check continue event
 						return e.EventArgs.MokuMoku.GetNumJoining() < e.EventArgs.MinContinueMembers
