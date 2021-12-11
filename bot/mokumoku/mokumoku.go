@@ -35,7 +35,9 @@ func (e *Event) MokuMoku() bool {
 					if _, exist := e.EventArgs.MuteIgnore[event.MemberId]; !exist {
 
 						event.result <- event.ToChatId == e.EventArgs.MokuMoku.GetID()
-						if cur := time.Now(); event.ToChatId == e.EventArgs.MokuMoku.GetID() && cur.Sub(prev) > 20*time.Second {
+						if cur := time.Now(); event.ToChatId == e.EventArgs.MokuMoku.GetID() &&
+							event.FromChatId != e.EventArgs.MokuMoku.GetID() &&
+							cur.Sub(prev) > 20*time.Second {
 
 							prev = cur
 							e.Talk(
