@@ -57,6 +57,9 @@ func init() {
 		fmt.Println("cannot open discord bot connection: " + err.Error())
 	}
 
+	// add nickname
+	session.UpdateGameStatus(1, "適度に駄弁る作業部屋Bot")
+
 	// set finalizer
 	apis.Finalizer = append(apis.Finalizer, func() {
 		session.Close()
