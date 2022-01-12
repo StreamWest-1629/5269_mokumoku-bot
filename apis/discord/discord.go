@@ -87,10 +87,8 @@ func onVoiceStateUpdate(_ *discordgo.Session, updated *discordgo.VoiceStateUpdat
 		}
 
 		// check mute
-		if updated.ChannelID != "" {
-			if mute := event.CheckMute(updated.UserID, before, updated.ChannelID); updated.Mute != mute {
-				session.GuildMemberMute(updated.GuildID, updated.UserID, mute)
-			}
+		if mute := event.CheckMute(updated.UserID, before, updated.ChannelID); updated.Mute != mute {
+			session.GuildMemberMute(updated.GuildID, updated.UserID, mute)
 		}
 
 	} else if guild, exist := SearchGuild(updated.GuildID); exist {
