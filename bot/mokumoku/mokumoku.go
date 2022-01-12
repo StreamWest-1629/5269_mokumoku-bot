@@ -2,13 +2,17 @@ package mokumoku
 
 import (
 	"app/bot/cheerleading"
+	"fmt"
 	"time"
 )
 
-func (e *Event) MokuMoku() bool {
+func (e *Event) MokuMoku() (isStopped bool) {
 
 	footer := time.Now().Add(JST + MokuMokuMinute).Format("休憩時間は15:04頃からです！")
 	e.Talk(cheerleading.MokuMokuBegin, MsgBeginMokuMoku.Description, footer, true)
+
+	numMember := e.EventArgs.MokuMoku.GetNumJoining()
+	e.GroupConn.SetStateMessage(fmt.Sprint(numMember+1, "人が作業中！"))
 
 	halfCall := time.NewTimer(MokuMokuMinute / 2)
 	endCall := time.NewTimer(MokuMokuMinute - 30*time.Second)
@@ -35,8 +39,13 @@ func (e *Event) MokuMoku() bool {
 					if _, exist := e.EventArgs.MuteIgnore[event.MemberId]; !exist {
 
 						event.result <- event.ToChatId == e.EventArgs.MokuMoku.GetID()
-						if cur := time.Now(); event.ToChatId == e.EventArgs.MokuMoku.GetID() &&
-							event.FromChatId != e.EventArgs.MokuMoku.GetID() &&
+
+						moveToHere := event.ToChatId == e.EventArgs.MokuMoku.GetID()
+						moveFromHere := event.FromChatId == e.EventArgs.MokuMoku.GetID()
+						numMember := e.EventArgs.MokuMoku.GetNumJoining()
+
+						// join into voice channel
+						if cur := time.Now(); moveToHere && !moveFromHere &&
 							cur.Sub(prev) > 20*time.Second {
 
 							prev = cur
@@ -44,11 +53,12 @@ func (e *Event) MokuMoku() bool {
 								cheerleading.JoiningDuringMokuMoku,
 								"今は作業時間です。張り切って作業をしましょう。",
 								footer, false)
-
 						}
 
+						e.GroupConn.SetStateMessage(fmt.Sprint(numMember+1, "人が作業中！"))
+
 						// check continue event
-						return e.EventArgs.MokuMoku.GetNumJoining() < e.EventArgs.MinContinueMembers
+						return numMember < e.EventArgs.MinContinueMembers
 					} else {
 						event.result <- false
 					}
@@ -61,5 +71,4 @@ func (e *Event) MokuMoku() bool {
 	}
 
 	return false
-
 }

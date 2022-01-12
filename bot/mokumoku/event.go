@@ -3,7 +3,6 @@ package mokumoku
 import (
 	"app/bot"
 	"app/bot/cheerleading"
-	"fmt"
 	"os"
 	"time"
 )
@@ -113,6 +112,8 @@ func (e *Event) CheckMute(memberId, fromChatId, toChatId string) bool {
 }
 
 func (e *Event) onClose() {
+	e.EventArgs.Random.Println(&MsgEndEvent)
+	e.GroupConn.SetStateMessage("もくもくへどうぞ")
 	e.OnClose()
 }
 
@@ -127,13 +128,11 @@ func (e *Event) routine() {
 	e.cheerleader = cheerleading.RandomCheerleader()
 	e.Talk(cheerleading.MokuMokuLaunch, MsgBeginEvent.Description, "", true)
 
+	defer e.onClose()
+
 	for !e.routineOnce() {
 		e.cheerleader = cheerleading.RandomCheerleader()
 	}
-
-	e.onClose()
-	e.EventArgs.Random.Println(&MsgEndEvent)
-	fmt.Println("mokumoku event closed")
 }
 
 func (e *Event) routineOnce() (isClosed bool) {

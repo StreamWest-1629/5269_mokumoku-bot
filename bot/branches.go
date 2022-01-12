@@ -10,6 +10,7 @@ type (
 	GroupConn interface {
 		MakePrivateTextChat(name, topic string, allowMemberIds []string) (TextConn, error)
 		MakePrivateVoiceChat(name string, allowMemberIds []string) (VoiceConn, error)
+		SetStateMessage(message string)
 		MemberMute(memberId string, mute bool)
 	}
 

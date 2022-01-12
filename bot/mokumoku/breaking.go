@@ -12,6 +12,8 @@ func (e *Event) Breaking() bool {
 	footer := time.Now().Add(JST + BreakingMinute).Format("作業時間は15:04頃からです！")
 	e.Talk(cheerleading.BreakingBegin, MsgBeginBreaking.Description, footer, false)
 
+	e.GroupConn.SetStateMessage("休憩中だよ")
+
 	branches, err := bot.SpreadBranches(e.GroupConn, e.EventArgs)
 	if err != nil {
 		fmt.Println(err.Error())

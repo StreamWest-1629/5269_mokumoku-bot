@@ -58,6 +58,10 @@ func (g *Guild) Name() string {
 	return g.guild.Name
 }
 
+func (g *Guild) SetStateMessage(message string) {
+	session.GuildMemberNickname(g.ID(), g.__findMe().User.ID, message)
+}
+
 func (g *Guild) MakePrivateTextChat(name, topic string, allowMemberIds []string) (vc bot.TextConn, err error) {
 
 	const Allowance = discordgo.PermissionViewChannel | discordgo.PermissionSendMessages
