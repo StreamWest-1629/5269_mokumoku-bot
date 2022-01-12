@@ -4,6 +4,7 @@ import (
 	"app/bot"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -59,7 +60,9 @@ func (g *Guild) Name() string {
 }
 
 func (g *Guild) SetStateMessage(message string) {
-	session.GuildMemberNickname(g.ID(), g.__findMe().User.ID, message)
+	if err := session.GuildMemberNickname(g.guild.ID, "@me", message); err != nil {
+		log.Println(err.Error())
+	}
 }
 
 func (g *Guild) MakePrivateTextChat(name, topic string, allowMemberIds []string) (vc bot.TextConn, err error) {

@@ -40,8 +40,8 @@ func init() {
 		session, ownUserId = s, own
 	}
 
-	// set intents
-	session.Identify.Intents = discordgo.IntentsAll
+	// // set intents
+	// session.Identify.Intents = discordgo.IntentsAll
 
 	// register event listener
 	session.AddHandler(onMessageCreate)

@@ -12,7 +12,7 @@ func (e *Event) MokuMoku() (isStopped bool) {
 	e.Talk(cheerleading.MokuMokuBegin, MsgBeginMokuMoku.Description, footer, true)
 
 	numMember := e.EventArgs.MokuMoku.GetNumJoining()
-	e.GroupConn.SetStateMessage(fmt.Sprint(numMember+1, "人が作業中！"))
+	e.GroupConn.SetStateMessage(fmt.Sprint(numMember, "人が作業中！"))
 
 	halfCall := time.NewTimer(MokuMokuMinute / 2)
 	endCall := time.NewTimer(MokuMokuMinute - 30*time.Second)
@@ -55,7 +55,7 @@ func (e *Event) MokuMoku() (isStopped bool) {
 								footer, false)
 						}
 
-						e.GroupConn.SetStateMessage(fmt.Sprint(numMember+1, "人が作業中！"))
+						e.GroupConn.SetStateMessage(fmt.Sprint(numMember, "人が作業中！"))
 
 						// check continue event
 						return numMember < e.EventArgs.MinContinueMembers
