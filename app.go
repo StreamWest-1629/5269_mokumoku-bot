@@ -3,7 +3,8 @@ package main
 import (
 	"app/apis"
 	_ "app/apis/discord"
-	_ "app/apis/twitter"
+
+	// _ "app/apis/twitter"
 	_ "app/toys/random2char"
 	"fmt"
 	"os"

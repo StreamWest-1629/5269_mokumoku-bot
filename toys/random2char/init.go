@@ -14,6 +14,7 @@ func init() {
 		AccessToken:    os.Getenv("RANDOM2CHARLOOP_ACCESSTOKEN"),
 		AccessSecret:   os.Getenv("RANDOM2CHARLOOP_ACCESSTOKEN_SECRET"),
 	}
+	log.Println(bot)
 	bot.Init()
 	ticker := time.Tick(time.Minute)
 
