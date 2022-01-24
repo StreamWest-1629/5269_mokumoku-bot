@@ -25,10 +25,10 @@ func (keys *TweetBot) Init() {
 
 func (bot *TweetBot) Tweet(msg string) error {
 	b, _ := json.Marshal(map[string]string{"text": msg})
-	resp, err := bot.client.Post("https://api.twitter.com/2/tweets", "application/json", bytes.NewBuffer(b))
-	decoder := json.NewDecoder(resp.Body)
-	maps := map[string]interface{}{}
-	decoder.Decode(&maps)
-	log.Println(maps)
+	res, err := bot.client.Post("https://api.twitter.com/2/tweets", "application/json", bytes.NewBuffer(b))
+	log.Println("status code:", res.StatusCode)
+	// maps := map[string]interface{}{}
+	// decoder.Decode(&maps)
+	// log.Println(maps)
 	return err
 }
