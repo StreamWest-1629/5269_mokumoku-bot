@@ -29,6 +29,7 @@ func TestFinal(t *testing.T) {
 			log.Println("tweeting in @2char_looping: " + tweets)
 			if err := bot.Tweet(tweets); err != nil {
 				log.Println("failed to tweeting: " + err.Error())
+				return
 			}
 		}
 	}()
