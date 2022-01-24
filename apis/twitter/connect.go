@@ -1,8 +1,6 @@
 package twitter
 
 import (
-	"errors"
-
 	"github.com/dghubble/go-twitter/twitter"
 )
 
@@ -15,26 +13,27 @@ func GetIconUrl(id string) (string, error) {
 }
 
 func (c *Connect) GetIconUrl(id string) (string, error) {
+	return "", nil
+	// if c.client == nil {
+	// 	return "", errors.New("???")
+	// }
 
-	if c.client == nil {
-		return "", errors.New("???")
-	}
-
-	if user, _, err := c.client.Users.Show(&twitter.UserShowParams{
-		ScreenName: id,
-	}); err != nil {
-		return "", errors.New("cannot get user infomation from twitter: " + err.Error())
-	} else {
-		return user.ProfileImageURL, nil
-	}
+	// if user, _, err := c.client.Users.Show(&twitter.UserShowParams{
+	// 	ScreenName: id,
+	// }); err != nil {
+	// 	return "", errors.New("cannot get user infomation from twitter: " + err.Error())
+	// } else {
+	// 	return user.ProfileImageURL, nil
+	// }
 }
 
 func (c *Connect) GetName(id string) (string, error) {
-	if user, _, err := c.client.Users.Show(&twitter.UserShowParams{
-		ScreenName: id,
-	}); err != nil {
-		return "", errors.New("cannot get user infomation from twitter: " + err.Error())
-	} else {
-		return user.Name, nil
-	}
+	return "", nil
+	// if user, _, err := c.client.Users.Show(&twitter.UserShowParams{
+	// 	ScreenName: id,
+	// }); err != nil {
+	// 	return "", errors.New("cannot get user infomation from twitter: " + err.Error())
+	// } else {
+	// 	return user.Name, nil
+	// }
 }

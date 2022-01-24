@@ -20,7 +20,7 @@ func init() {
 	go func() {
 		for range ticker {
 			tweets := MakeText()
-			log.Println("tweeting in @2char_looping: " + tweets)
+			log.Println("tweeting in @2char_looping: " + tweets[:10] + "...")
 			if err := bot.Tweet(tweets); err != nil {
 				log.Println("failed to tweeting: " + err.Error())
 			}
