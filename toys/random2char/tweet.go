@@ -3,6 +3,7 @@ package random2char
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/dghubble/oauth1"
@@ -24,6 +25,10 @@ func (keys *TweetBot) Init() {
 
 func (bot *TweetBot) Tweet(msg string) error {
 	b, _ := json.Marshal(map[string]string{"text": msg})
-	_, err := bot.client.Post("https://api.twitter.com/2/tweets", "application/json", bytes.NewBuffer(b))
+	resp, err := bot.client.Post("https://api.twitter.com/2/tweets", "application/json", bytes.NewBuffer(b))
+	decoder := json.NewDecoder(resp.Body)
+	maps := map[string]interface{}{}
+	decoder.Decode(&maps)
+	log.Println(maps)
 	return err
 }
