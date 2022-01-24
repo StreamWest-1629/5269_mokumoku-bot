@@ -3,9 +3,9 @@ module app
 go 1.17
 
 require (
-	github.com/bwmarrin/dgvoice v0.0.0-20210225172318-caaac756e02e
 	github.com/bwmarrin/discordgo v0.23.2
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
+	github.com/dghubble/oauth1 v0.7.1
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 )
 
@@ -20,5 +20,4 @@ require (
 	golang.org/x/sys v0.0.0-20200803210538-64077c9b5642 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
-	layeh.com/gopus v0.0.0-20210501142526-1ee02d434e32 // indirect
 )

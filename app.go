@@ -4,6 +4,7 @@ import (
 	"app/apis"
 	_ "app/apis/discord"
 	_ "app/apis/twitter"
+	_ "app/toys/random2char"
 	"fmt"
 	"os"
 
@@ -19,7 +20,4 @@ func init() {
 func main() {
 	defer apis.Finalize()
 	heroku.HerokuRouter()
-	// for {
-	// 	time.Sleep(time.Hour)
-	// }
 }
